@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Eco Craft</string>
+    <string name="title_activity_main">Eco Craft</string>
+    <string name="package_name">com.ecocraft.islandprotector</string>
+    <string name="custom_url_scheme">com.ecocraft.islandprotector</string>
+</resources>

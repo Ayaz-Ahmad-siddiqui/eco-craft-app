@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Fruit Catch: Kids Learning Fun</title>
+    <style>
+      :root {
+        --font-family: "Comic Sans MS", system-ui, -apple-system, sans-serif;
+        --btn-grad: linear-gradient(135deg, #22c55e, #16a34a);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        background: radial-gradient(circle, #1e1b4b 0%, #0f172a 100%);
+        color: #ffffff;
+        font-family: var(--font-family);
+        overflow: hidden;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding: env(safe-area-inset-top, 12px) 12px
+          env(safe-area-inset-bottom, 12px) 12px;
+      }
+
+      header {
+        width: 100%;
+        max-width: 600px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 5px;
+        z-index: 10;
+      }
+
+      .title-logo {
+        font-size: 1.6rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #f43f5e, #fbbf24);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .stats-container {
+        display: flex;
+        gap: 6px;
+      }
+
+      .stat-badge {
+        background: rgba(30, 41, 59, 0.9);
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      }
+
+      .stat-badge.gold {
+        border-color: #fbbf24;
+        color: #fbbf24;
+      }
+      .stat-badge.lvl {
+        border-color: #38bdf8;
+        color: #38bdf8;
+      }
+
+      .game-viewport {
+        flex-grow: 1;
+        width: 100%;
+        max-width: 600px;
+        position: relative;
+        background: rgba(255, 255, 255, 0.03);
+        border: 3px dashed rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        margin: 10px 0;
+        overflow: hidden;
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+      }
+
+      .progress-container {
+        position: absolute;
+        top: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        z-index: 15;
+        width: 85%;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 18px;
+        background: rgba(15, 23, 42, 0.85);
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #a855f7, #ec4899);
+        border-radius: 8px;
+        transition: width 0.3s ease-out;
+      }
+
+      .goal-label {
+        font-size: 0.9rem;
+        font-weight: 900;
+        color: #e2e8f0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        text-align: center;
+      }
+
+      .fruit-item {
+        position: absolute;
+        cursor: pointer;
+        z-index: 20;
+        transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        padding: 10px;
+      }
+
+      .fruit-item.selected {
+        transform: scale(1.4) !important;
+        filter: drop-shadow(0 0 25px #ffffff) brightness(1.2) !important;
+        z-index: 50;
+      }
+
+      @keyframes popIn {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .fruit-text-hint {
+        position: absolute;
+        background: rgba(15, 23, 42, 0.9);
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 900;
+        padding: 2px 6px;
+        border-radius: 8px;
+        white-space: nowrap;
+        top: -18px;
+        left: 50%;
+        transform: translateX(-50%);
+        pointer-events: none;
+        border: 2px solid white;
+        text-transform: uppercase;
+      }
+
+      .float-text {
+        position: absolute;
+        color: #22c55e;
+        font-weight: 900;
+        font-size: 1.5rem;
+        pointer-events: none;
+        animation: riseFade 0.8s forwards ease-out;
+        text-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
+        z-index: 100;
+      }
+
+      /* NEW ANIMATION STYLING FOR FRUIT MATCH TEXTS */
+      .fruit-announcement-text {
+        position: absolute;
+        font-weight: 900;
+        font-size: 2.2rem;
+        pointer-events: none;
+        z-index: 120;
+        text-align: center;
+        transform: translate(-50%, -50%);
+        animation: epicPopReveal 1.2s forwards
+          cubic-bezier(0.175, 0.885, 0.32, 1.5);
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+        -webkit-text-stroke: 1.5px #ffffff;
+      }
+
+      @keyframes epicPopReveal {
+        0% {
+          transform: scale(0.3) rotate(-15deg);
+          opacity: 0;
+        }
+        30% {
+          transform: scale(1.3) rotate(8deg);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1) rotate(-4deg);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0.8) translateY(-60px);
+          opacity: 0;
+        }
+      }
+
+      @keyframes riseFade {
+        0% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-80px) scale(1.2);
+          opacity: 0;
+        }
+      }
+
+      .control-deck {
+        width: 100%;
+        max-width: 600px;
+        background: rgba(30, 41, 59, 0.95);
+        border-top: 4px solid rgba(255, 255, 255, 0.1);
+        border-radius: 28px 28px 0 0;
+        padding: 16px 12px;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .basket-row {
+        display: flex;
+        justify-content: space-around;
+        gap: 12px;
+      }
+
+      .fruit-basket {
+        flex: 1;
+        max-width: 115px;
+        aspect-ratio: 0.95;
+        background: rgba(15, 23, 42, 0.7);
+        border: 5px solid transparent;
+        border-radius: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.1s ease;
+        cursor: pointer;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .fruit-basket:active {
+        transform: scale(0.9);
+      }
+
+      .basket-icon {
+        font-size: 2.5rem;
+        margin-bottom: 2px;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      }
+
+      .basket-label {
+        font-size: 0.8rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.96);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+      }
+
+      .modal-content {
+        background: #1e293b;
+        border: 4px solid #22c55e;
+        border-radius: 32px;
+        padding: 35px 25px;
+        text-align: center;
+        max-width: 360px;
+        width: 100%;
+        box-shadow: 0 0 35px rgba(34, 197, 94, 0.3);
+      }
+
+      .modal-badge {
+        font-size: 4.5rem;
+        margin-bottom: 12px;
+        animation: bounce 1.2s infinite;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
+
+      .modal-title {
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: #4ade80;
+        margin-bottom: 10px;
+      }
+
+      .modal-desc {
+        font-size: 1rem;
+        color: #cbd5e1;
+        line-height: 1.5;
+        margin-bottom: 25px;
+      }
+
+      .modal-btn {
+        background: var(--btn-grad);
+        border: 3px solid #4ade80;
+        width: 100%;
+        height: 54px;
+        border-radius: 18px;
+        color: white;
+        font-weight: 900;
+        font-size: 1.1rem;
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+        cursor: pointer;
+        letter-spacing: 0.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="title-logo">Fruit Catch 🍎</div>
+      <div class="stats-container">
+        <div class="stat-badge lvl">
+          ⭐ <span id="level-display">Level 1</span>
+        </div>
+        <div class="stat-badge gold">🪙 <span id="coin-count">0</span></div>
+      </div>
+    </header>
+
+    <main class="game-viewport" id="play-area">
+      <div class="progress-container">
+        <div class="goal-label" id="objective-label">Goal: Match 5 Fruits!</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill-bar"></div>
+        </div>
+      </div>
+    </main>
+
+    <section class="control-deck">
+      <div class="basket-row" id="basket-container">
+        <!-- Baskets dynamically appended -->
+      </div>
+    </section>
+
+    <div class="modal" id="victory-modal">
+      <div class="modal-content">
+        <div class="modal-badge" id="modal-emoji">🎉🎈</div>
+        <div class="modal-title" id="modal-title">Superb Job!</div>
+        <div class="modal-desc" id="modal-desc">
+          Ready for next level challenges?
+        </div>
+        <button class="modal-btn" id="modal-action-btn" onclick="modalAction()">
+          START LEVEL 2 ➔
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let audioCtx;
+      function initAudio() {
+        if (!audioCtx)
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
+      }
+
+      function playTone(freq, type, duration) {
+        initAudio();
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        osc.type = type;
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioCtx.currentTime + duration,
+        );
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      }
+
+      function playSuccessSound() {
+        playTone(523.25, "sine", 0.1);
+        setTimeout(() => playTone(659.25, "sine", 0.1), 80);
+        setTimeout(() => playTone(783.99, "sine", 0.2), 160);
+      }
+      function playErrorSound() {
+        playTone(160, "sawtooth", 0.25);
+      }
+      function playWinSound() {
+        playTone(523.25, "sine", 0.1);
+        setTimeout(() => playTone(587.33, "sine", 0.1), 100);
+        setTimeout(() => playTone(659.25, "sine", 0.1), 200);
+        setTimeout(() => playTone(880.0, "sine", 0.4), 300);
+      }
+
+      // HIGH-RELIABILITY AUDIO ENGINE FOR MOBILE WEBVIEW & CAPACITOR
+      function speakFruitName(nameString) {
+        try {
+          // Stop any previous playing audio
+          if (window.currentFruitAudio) {
+            window.currentFruitAudio.pause();
+            window.currentFruitAudio.currentTime = 0;
+          }
+
+          // Google Translate Public Audio Stream (Cute & Fast Natural Voice)
+          const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(nameString)}&tl=en&client=tw-ob`;
+
+          const audio = new Audio(audioUrl);
+          window.currentFruitAudio = audio;
+
+          // Mobile browsers require audio playback speed / pitch control
+          audio.playbackRate = 0.95; // Clear pronunciation rate
+
+          let playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((error) => {
+              console.log(
+                "Audio play deferred or blocked, using fallback WebSpeech",
+              );
+              // Fallback to WebSpeech if offline
+              fallbackSpeechSynthesis(nameString);
+            });
+          }
+        } catch (e) {
+          fallbackSpeechSynthesis(nameString);
+        }
+      }
+
+      function fallbackSpeechSynthesis(nameString) {
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(nameString);
+          utterance.lang = "en-US";
+          utterance.pitch = 1.5;
+          utterance.rate = 0.8;
+          window.speechSynthesis.speak(utterance);
+        }
+      }
+      // ANIMATED POP-OUT GRAPHIC TEXT DESIGN
+      function createEpicFruitPopup(text, color) {
+        const playArea = document.getElementById("play-area");
+        const alertEl = document.createElement("div");
+        alertEl.className = "fruit-announcement-text";
+        alertEl.innerText = text;
+        alertEl.style.color = color;
+
+        alertEl.style.left = "50%";
+        alertEl.style.top = "50%";
+
+        playArea.appendChild(alertEl);
+        setTimeout(() => alertEl.remove(), 1200);
+      }
+
+      const levelLevels = [
+        {
+          level: 1,
+          name: "Summer Treats! ☀️",
+          target: 5,
+          fruits: [
+            { type: "apple", icon: "🍎", name: "Apple", color: "#ef4444" },
+            { type: "orange", icon: "🍊", name: "Orange", color: "#f97316" },
+            { type: "banana", icon: "🍌", name: "Banana", color: "#eab308" },
+          ],
+        },
+        {
+          level: 2,
+          name: "Berry Paradise! 🍓",
+          target: 6,
+          fruits: [
+            {
+              type: "strawberry",
+              icon: "🍓",
+              name: "Strawberry",
+              color: "#f43f5e",
+            },
+            { type: "grapes", icon: "🍇", name: "Grapes", color: "#a855f7" },
+            {
+              type: "watermelon",
+              icon: "🍉",
+              name: "Watermelon",
+              color: "#22c55e",
+            },
+          ],
+        },
+        {
+          level: 3,
+          name: "Exotic Jungle! 🥭",
+          target: 7,
+          fruits: [
+            { type: "mango", icon: "🥭", name: "Mango", color: "#fbbf24" },
+            {
+              type: "pineapple",
+              icon: "🍍",
+              name: "Pineapple",
+              color: "#eab308",
+            },
+            { type: "avocado", icon: "🥑", name: "Avocado", color: "#84cc16" },
+          ],
+        },
+        {
+          level: 4,
+          name: "Citrus & Fresh! 🍋",
+          target: 8,
+          fruits: [
+            { type: "lemon", icon: "🍋", name: "Lemon", color: "#facc15" },
+            { type: "peach", icon: "🍑", name: "Peach", color: "#fb923c" },
+            { type: "cherry", icon: "🍒", name: "Cherry", color: "#dc2626" },
+          ],
+        },
+        {
+          level: 5,
+          name: "Super Foods Orchard! 🥝",
+          target: 9,
+          fruits: [
+            { type: "pomegranate", icon: "🍎", name: "Anar", color: "#b91c1c" },
+            { type: "kiwi", icon: "🥝", name: "Kiwi", color: "#65a30d" },
+            { type: "pear", icon: "🍐", name: "Pear", color: "#84cc16" },
+          ],
+        },
+        {
+          level: 6,
+          name: "Melon Madness! 🍈",
+          target: 10,
+          fruits: [
+            { type: "cantaloupe", icon: "🍈", name: "Melon", color: "#f59e0b" },
+            { type: "coconut", icon: "🥥", name: "Coconut", color: "#78350f" },
+            {
+              type: "blueberry",
+              icon: "🫐",
+              name: "Blueberry",
+              color: "#3b82f6",
+            },
+          ],
+        },
+        {
+          level: 7,
+          name: "Citrus Boost! 🍊",
+          target: 11,
+          fruits: [
+            {
+              type: "grapefruit",
+              icon: "🍊",
+              name: "Grapefruit",
+              color: "#f43f5e",
+            },
+            { type: "lime", icon: "🍋", name: "Lime", color: "#a3e635" },
+            { type: "plum", icon: "🍑", name: "Plum", color: "#86198f" },
+          ],
+        },
+        {
+          level: 8,
+          name: "Sweet Harvest! 🌴",
+          target: 12,
+          fruits: [
+            { type: "fig", icon: "🫚", name: "Fig", color: "#a21caf" },
+            { type: "date", icon: "🌴", name: "Date", color: "#b45309" },
+            { type: "apricot", icon: "🍑", name: "Apricot", color: "#f97316" },
+          ],
+        },
+        {
+          level: 9,
+          name: "Tropical Blast! 🥭",
+          target: 14,
+          fruits: [
+            { type: "papaya", icon: "🥭", name: "Papaya", color: "#f97316" },
+            { type: "guava", icon: "🍏", name: "Guava", color: "#4ade80" },
+            {
+              type: "dragonfruit",
+              icon: "🌵",
+              name: "DragonFruit",
+              color: "#ec4899",
+            },
+          ],
+        },
+        {
+          level: 10,
+          name: "Grand Fruit Feast! 👑",
+          target: 15,
+          fruits: [
+            {
+              type: "starfruit",
+              icon: "⭐",
+              name: "Starfruit",
+              color: "#eab308",
+            },
+            {
+              type: "passionfruit",
+              icon: "🟣",
+              name: "Passion",
+              color: "#7c3aed",
+            },
+            {
+              type: "mangosteen",
+              icon: "🍇",
+              name: "Mangosteen",
+              color: "#4c1d95",
+            },
+          ],
+        },
+      ];
+
+      let currentLvlIdx = 0;
+      let state = { score: 0, coins: 0, activeFruit: null, spawnTimer: null };
+
+      function loadLevel(idx) {
+        currentLvlIdx = idx;
+        const config = levelLevels[currentLvlIdx];
+
+        state.score = 0;
+        state.activeFruit = null;
+
+        document
+          .getElementById("play-area")
+          .querySelectorAll(".fruit-item")
+          .forEach((e) => e.remove());
+
+        document.getElementById("level-display").innerText =
+          `Level ${config.level}`;
+        document.getElementById("objective-label").innerText =
+          `${config.name} (Goal: ${config.target})`;
+
+        const basketContainer = document.getElementById("basket-container");
+        basketContainer.innerHTML = "";
+
+        config.fruits.forEach((f) => {
+          const bEl = document.createElement("div");
+          bEl.className = "fruit-basket";
+          bEl.style.borderColor = f.color;
+          bEl.style.boxShadow = `0 0 12px ${f.color}33`;
+          bEl.innerHTML = `
+                    <div class="basket-icon">${f.icon}</div>
+                    <div class="basket-label" style="color: ${f.color}">${f.name}</div>
+                `;
+
+          const triggerAction = () => attemptMatch(f.type);
+          bEl.addEventListener("click", triggerAction);
+          bEl.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            triggerAction();
+          });
+
+          basketContainer.appendChild(bEl);
+        });
+
+        updateHUD();
+
+        if (state.spawnTimer) clearInterval(state.spawnTimer);
+        state.spawnTimer = setInterval(spawnFruit, 1900);
+
+        for (let i = 0; i < 3; i++) {
+          spawnFruit();
+        }
+      }
+
+      function spawnFruit() {
+        const config = levelLevels[currentLvlIdx];
+        if (state.score >= config.target) return;
+
+        const playArea = document.getElementById("play-area");
+        const fruit =
+          config.fruits[Math.floor(Math.random() * config.fruits.length)];
+
+        const element = document.createElement("div");
+        element.className = "fruit-item";
+        element.id = `fr-${Date.now()}-${Math.random()}`;
+        element.dataset.type = fruit.type;
+        element.style.filter = `drop-shadow(0 0 14px ${fruit.color})`;
+        element.innerHTML = `
+                <div class="fruit-text-hint" style="border-color: ${fruit.color}; color: ${fruit.color}">${fruit.name} ${fruit.icon}</div>
+                <span style="font-size: 3.6rem; display: block;">${fruit.icon}</span>
+            `;
+
+        const x = Math.floor(Math.random() * 70) + 5;
+        const y = Math.floor(Math.random() * 55) + 20;
+        element.style.left = `${x}%`;
+        element.style.top = `${y}%`;
+
+        const triggerSelect = (e) => {
+          initAudio();
+          selectFruit(element);
+          e.stopPropagation();
+          e.preventDefault();
+        };
+
+        element.addEventListener("click", triggerSelect);
+        element.addEventListener("touchstart", triggerSelect, {
+          passive: false,
+        });
+
+        playArea.appendChild(element);
+      }
+
+      function selectFruit(element) {
+        playTone(450, "sine", 0.05);
+        document
+          .querySelectorAll(".fruit-item")
+          .forEach((f) => f.classList.remove("selected"));
+        state.activeFruit = element;
+        element.classList.add("selected");
+      }
+
+      function attemptMatch(basketType) {
+        initAudio();
+        if (!state.activeFruit) {
+          playErrorSound();
+          return;
+        }
+
+        const fruitType = state.activeFruit.dataset.type;
+        const config = levelLevels[currentLvlIdx];
+
+        if (fruitType === basketType) {
+          playSuccessSound();
+
+          const matchedFruitObj = config.fruits.find(
+            (f) => f.type === fruitType,
+          );
+
+          if (matchedFruitObj) {
+            // Mobile compatible child voice execution
+            speakFruitName(matchedFruitObj.name);
+            createEpicFruitPopup(
+              `${matchedFruitObj.icon} ${matchedFruitObj.name}!`,
+              matchedFruitObj.color,
+            );
+          }
+
+          state.score++;
+          state.coins += 10;
+
+          createFloatingText(
+            "+10 🪙",
+            window.innerWidth / 2,
+            window.innerHeight / 2,
+          );
+
+          state.activeFruit.remove();
+          state.activeFruit = null;
+
+          updateHUD();
+          checkWin();
+        } else {
+          playErrorSound();
+          createFloatingText(
+            "Try Again! ❌",
+            window.innerWidth / 2,
+            window.innerHeight / 2,
+          );
+        }
+      }
+
+      function createFloatingText(text, x, y) {
+        const popup = document.createElement("div");
+        popup.className = "float-text";
+        popup.innerText = text;
+        popup.style.left = `${x - 40}px`;
+        popup.style.top = `${y - 20}px`;
+        document.body.appendChild(popup);
+        setTimeout(() => popup.remove(), 800);
+      }
+
+      function updateHUD() {
+        const config = levelLevels[currentLvlIdx];
+        document.getElementById("coin-count").innerText = state.coins;
+
+        const percentage = (state.score / config.target) * 100;
+        document.getElementById("progress-fill-bar").style.width =
+          `${percentage}%`;
+      }
+
+      function checkWin() {
+        const config = levelLevels[currentLvlIdx];
+        if (state.score >= config.target) {
+          clearInterval(state.spawnTimer);
+          document.querySelectorAll(".fruit-item").forEach((f) => f.remove());
+
+          setTimeout(() => {
+            playWinSound();
+            showVictoryModal();
+          }, 400);
+        }
+      }
+
+      function showVictoryModal() {
+        const modal = document.getElementById("victory-modal");
+        const title = document.getElementById("modal-title");
+        const desc = document.getElementById("modal-desc");
+        const btn = document.getElementById("modal-action-btn");
+        const emoji = document.getElementById("modal-emoji");
+
+        if (currentLvlIdx < levelLevels.length - 1) {
+          const nextLevelNum = levelLevels[currentLvlIdx + 1].level;
+          emoji.innerText = "🎉🎈";
+          title.innerText = `Level ${levelLevels[currentLvlIdx].level} Cleared!`;
+          desc.innerText =
+            "Fantastic matching skill! Ready for the next fruit group?";
+          btn.innerText = `START LEVEL ${nextLevelNum} ➔`;
+        } else {
+          emoji.innerText = "👑🏆";
+          title.innerText = "Fruit Catch Champion!";
+          desc.innerText =
+            "Unbelievable! You completed all 10 levels perfectly. You are a super kid!";
+          btn.innerText = "PLAY AGAIN (RESET)";
+        }
+        modal.style.display = "flex";
+      }
+
+      function modalAction() {
+        document.getElementById("victory-modal").style.display = "none";
+        if (currentLvlIdx < levelLevels.length - 1) {
+          loadLevel(currentLvlIdx + 1);
+        } else {
+          state.coins = 0;
+          loadLevel(0);
+        }
+      }
+
+      window.onload = () => {
+        loadLevel(0);
+        // Mobile voice engines load initialization
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.getVoices();
+          if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = () =>
+              window.speechSynthesis.getVoices();
+          }
+        }
+        document.body.addEventListener("touchstart", initAudio, {
+          passive: true,
+        });
+        document.body.addEventListener("click", initAudio);
+      };
+    </script>
+  </body>
+</html>
