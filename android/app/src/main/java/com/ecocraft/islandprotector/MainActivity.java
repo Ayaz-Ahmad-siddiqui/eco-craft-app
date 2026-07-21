@@ -10,13 +10,19 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Capacitor WebView Settings Access
         WebView webView = this.bridge.getWebView();
         if (webView != null) {
             WebSettings settings = webView.getSettings();
             settings.setJavaScriptEnabled(true);
-            // Mobile par autoplay/speech restriction bypass
+            settings.setDomStorageEnabled(true);
+
+            // Audio autoplay unlock karne ke liye
             settings.setMediaPlaybackRequiresUserGesture(false);
+
+            // Online sound URLs load karne ke liye
+            settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            settings.setAllowFileAccessFromFileURLs(true);
+            settings.setAllowUniversalAccessFromFileURLs(true);
         }
     }
 }
