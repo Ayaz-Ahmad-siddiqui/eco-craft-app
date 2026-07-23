@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
-    <title>Fruit Catch: Kids Learning Fun</title>
+    <title>Eco Craft Kids Learning Game</title>
     <!-- Capacitor Native Bridge Layer -->
     <script src="capacitor.js"></script>
     <style>
@@ -30,6 +30,7 @@
         font-family: var(--font-family);
         overflow: hidden;
         height: 100vh;
+        width: 100vw;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -38,23 +39,108 @@
           env(safe-area-inset-bottom, 12px) 12px;
       }
 
+      /* Category Selection Screen Styles */
+      #category-screen {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle, #312e81 0%, #0f172a 100%);
+        z-index: 500;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 15px;
+        overflow-y: auto;
+      }
+
+      .cat-header {
+        text-align: center;
+        margin-bottom: 20px;
+        margin-top: 10px;
+      }
+
+      .cat-title {
+        font-size: 2.2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #fbbf24, #f43f5e, #38bdf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+      }
+
+      .cat-subtitle {
+        font-size: 1rem;
+        color: #cbd5e1;
+        margin-top: 4px;
+        font-weight: 700;
+      }
+
+      .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+        width: 100%;
+        max-width: 500px;
+        padding-bottom: 30px;
+      }
+
+      .cat-card {
+        background: rgba(30, 41, 59, 0.85);
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        padding: 16px 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      }
+
+      .cat-card:active {
+        transform: scale(0.94);
+      }
+
+      .cat-icon {
+        font-size: 3.2rem;
+        margin-bottom: 6px;
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+      }
+
+      .cat-label {
+        font-size: 1.05rem;
+        font-weight: 900;
+        text-align: center;
+        color: #ffffff;
+      }
+
+      .cat-badge {
+        font-size: 0.7rem;
+        background: rgba(255, 255, 255, 0.15);
+        padding: 2px 8px;
+        border-radius: 10px;
+        margin-top: 4px;
+        color: #fbbf24;
+        font-weight: 800;
+      }
+
+      /* Game Header & Viewport */
       header {
         width: 100%;
         max-width: 600px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 10px 5px;
+        padding: 6px 5px;
         z-index: 10;
       }
 
       .title-logo {
-        font-size: 1.6rem;
+        font-size: 1.3rem;
         font-weight: 900;
         background: linear-gradient(135deg, #f43f5e, #fbbf24);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5);
       }
 
       .stats-container {
@@ -66,22 +152,26 @@
         background: rgba(30, 41, 59, 0.9);
         border: 2px solid rgba(255, 255, 255, 0.15);
         border-radius: 20px;
-        padding: 6px 12px;
-        font-size: 0.85rem;
+        padding: 5px 10px;
+        font-size: 0.8rem;
         font-weight: 800;
         display: flex;
         align-items: center;
         gap: 4px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
       }
 
-      .stat-badge.gold {
-        border-color: #fbbf24;
-        color: #fbbf24;
-      }
-      .stat-badge.lvl {
-        border-color: #38bdf8;
-        color: #38bdf8;
+      .stat-badge.gold { border-color: #fbbf24; color: #fbbf24; }
+      .stat-badge.lvl { border-color: #38bdf8; color: #38bdf8; }
+
+      .btn-back-cat {
+        background: rgba(239, 68, 68, 0.25);
+        border: 2px solid #ef4444;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 16px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        cursor: pointer;
       }
 
       .game-viewport {
@@ -92,14 +182,14 @@
         background: rgba(255, 255, 255, 0.03);
         border: 3px dashed rgba(255, 255, 255, 0.1);
         border-radius: 24px;
-        margin: 10px 0;
+        margin: 8px 0;
         overflow: hidden;
         box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
       }
 
       .progress-container {
         position: absolute;
-        top: 15px;
+        top: 12px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
@@ -112,7 +202,7 @@
 
       .progress-bar {
         width: 100%;
-        height: 18px;
+        height: 16px;
         background: rgba(15, 23, 42, 0.85);
         border-radius: 10px;
         border: 2px solid rgba(255, 255, 255, 0.2);
@@ -128,7 +218,7 @@
       }
 
       .goal-label {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         font-weight: 900;
         color: #e2e8f0;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
@@ -141,24 +231,18 @@
         z-index: 20;
         transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        padding: 10px;
+        padding: 8px;
       }
 
       .fruit-item.selected {
-        transform: scale(1.4) !important;
+        transform: scale(1.35) !important;
         filter: drop-shadow(0 0 25px #ffffff) brightness(1.2) !important;
         z-index: 50;
       }
 
       @keyframes popIn {
-        0% {
-          transform: scale(0);
-          opacity: 0;
-        }
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
+        0% { transform: scale(0); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
       }
 
       .fruit-text-hint {
@@ -170,7 +254,7 @@
         padding: 2px 6px;
         border-radius: 8px;
         white-space: nowrap;
-        top: -18px;
+        top: -16px;
         left: 50%;
         transform: translateX(-50%);
         pointer-events: none;
@@ -182,7 +266,7 @@
         position: absolute;
         color: #22c55e;
         font-weight: 900;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         pointer-events: none;
         animation: riseFade 0.8s forwards ease-out;
         text-shadow: 0px 4px 6px rgba(0, 0, 0, 1);
@@ -192,45 +276,26 @@
       .fruit-announcement-text {
         position: absolute;
         font-weight: 900;
-        font-size: 2.2rem;
+        font-size: 2rem;
         pointer-events: none;
         z-index: 120;
         text-align: center;
         transform: translate(-50%, -50%);
-        animation: epicPopReveal 1.2s forwards
-          cubic-bezier(0.175, 0.885, 0.32, 1.5);
+        animation: epicPopReveal 1.2s forwards cubic-bezier(0.175, 0.885, 0.32, 1.5);
         text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
         -webkit-text-stroke: 1.5px #ffffff;
       }
 
       @keyframes epicPopReveal {
-        0% {
-          transform: scale(0.3) rotate(-15deg);
-          opacity: 0;
-        }
-        30% {
-          transform: scale(1.3) rotate(8deg);
-          opacity: 1;
-        }
-        50% {
-          transform: scale(1) rotate(-4deg);
-          opacity: 1;
-        }
-        100% {
-          transform: scale(0.8) translateY(-60px);
-          opacity: 0;
-        }
+        0% { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+        30% { transform: scale(1.2) rotate(8deg); opacity: 1; }
+        50% { transform: scale(1) rotate(-4deg); opacity: 1; }
+        100% { transform: scale(0.8) translateY(-60px); opacity: 0; }
       }
 
       @keyframes riseFade {
-        0% {
-          transform: translateY(0) scale(1);
-          opacity: 1;
-        }
-        100% {
-          transform: translateY(-80px) scale(1.2);
-          opacity: 0;
-        }
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
       }
 
       .control-deck {
@@ -239,23 +304,23 @@
         background: rgba(30, 41, 59, 0.95);
         border-top: 4px solid rgba(255, 255, 255, 0.1);
         border-radius: 28px 28px 0 0;
-        padding: 16px 12px;
+        padding: 12px 10px;
         box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
       }
 
       .basket-row {
         display: flex;
         justify-content: space-around;
-        gap: 12px;
+        gap: 8px;
       }
 
       .fruit-basket {
         flex: 1;
-        max-width: 115px;
+        max-width: 110px;
         aspect-ratio: 0.95;
         background: rgba(15, 23, 42, 0.7);
-        border: 5px solid transparent;
-        border-radius: 24px;
+        border: 4px solid transparent;
+        border-radius: 20px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -265,29 +330,25 @@
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
       }
 
-      .fruit-basket:active {
-        transform: scale(0.9);
-      }
+      .fruit-basket:active { transform: scale(0.9); }
 
       .basket-icon {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         margin-bottom: 2px;
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
       }
 
       .basket-label {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: 900;
         text-transform: uppercase;
+        text-align: center;
       }
 
       .modal {
         display: none;
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        top: 0; left: 0; right: 0; bottom: 0;
         background: rgba(15, 23, 42, 0.96);
         z-index: 1000;
         align-items: center;
@@ -299,7 +360,7 @@
         background: #1e293b;
         border: 4px solid #22c55e;
         border-radius: 32px;
-        padding: 35px 25px;
+        padding: 30px 20px;
         text-align: center;
         max-width: 360px;
         width: 100%;
@@ -307,53 +368,62 @@
       }
 
       .modal-badge {
-        font-size: 4.5rem;
-        margin-bottom: 12px;
+        font-size: 4rem;
+        margin-bottom: 10px;
         animation: bounce 1.2s infinite;
       }
 
       @keyframes bounce {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-12px);
-        }
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-12px); }
       }
 
       .modal-title {
-        font-size: 1.8rem;
+        font-size: 1.7rem;
         font-weight: 900;
         color: #4ade80;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
       }
 
       .modal-desc {
-        font-size: 1rem;
+        font-size: 0.95rem;
         color: #cbd5e1;
-        line-height: 1.5;
-        margin-bottom: 25px;
+        line-height: 1.4;
+        margin-bottom: 20px;
       }
 
       .modal-btn {
         background: var(--btn-grad);
         border: 3px solid #4ade80;
         width: 100%;
-        height: 54px;
+        height: 52px;
         border-radius: 18px;
         color: white;
         font-weight: 900;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
         cursor: pointer;
-        letter-spacing: 0.5px;
       }
     </style>
   </head>
   <body>
+
+    <!-- CATEGORIES SELECTION SCREEN -->
+    <div id="category-screen">
+      <div class="cat-header">
+        <div class="cat-title">Eco Craft Learning</div>
+        <div class="cat-subtitle">Choose a Category to Play! 🌟</div>
+      </div>
+
+      <div class="cat-grid" id="category-grid">
+        <!-- JS will populate categories -->
+      </div>
+    </div>
+
+    <!-- MAIN GAME SCREEN -->
     <header>
-      <div class="title-logo">Fruit Catch 🍎</div>
+      <button class="btn-back-cat" onclick="openCategoryMenu()">🏠 Menu</button>
+      <div class="title-logo" id="active-cat-title">Fruits 🍎</div>
       <div class="stats-container">
         <div class="stat-badge lvl">
           ⭐ <span id="level-display">Level 1</span>
@@ -364,7 +434,7 @@
 
     <main class="game-viewport" id="play-area">
       <div class="progress-container">
-        <div class="goal-label" id="objective-label">Goal: Match 5 Fruits!</div>
+        <div class="goal-label" id="objective-label">Goal: Match 5 Items!</div>
         <div class="progress-bar">
           <div class="progress-fill" id="progress-fill-bar"></div>
         </div>
@@ -375,6 +445,7 @@
       <div class="basket-row" id="basket-container"></div>
     </section>
 
+    <!-- VICTORY MODAL -->
     <div class="modal" id="victory-modal">
       <div class="modal-content">
         <div class="modal-badge" id="modal-emoji">🎉🎈</div>
@@ -383,7 +454,7 @@
           Ready for next level challenges?
         </div>
         <button class="modal-btn" id="modal-action-btn" onclick="modalAction()">
-          START LEVEL 2 ➔
+          START NEXT LEVEL ➔
         </button>
       </div>
     </div>
@@ -429,10 +500,9 @@
         setTimeout(() => playTone(880.0, "sine", 0.4), 300);
       }
 
-      // NATIVE & WEB HYBRID TEXT-TO-SPEECH ENGINE
-      async function speakFruitName(text) {
+      // VOICE TTS ENGINE
+      async function speakText(text) {
         try {
-          // Check if Capacitor TextToSpeech Plugin is registered globally
           if (
             window.Capacitor &&
             window.Capacitor.Plugins &&
@@ -448,26 +518,19 @@
             });
             return;
           }
-        } catch (e) {
-          console.log("Capacitor TTS Native Error, falling back to Web Speech API", e);
-        }
+        } catch (e) {}
 
-        // WebSpeech API Fallback (Standard Android Webview Support)
-        fallbackSpeechSynthesis(text);
-      }
-
-      function fallbackSpeechSynthesis(nameString) {
         if ("speechSynthesis" in window) {
           window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(nameString);
+          const utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = "en-US";
           utterance.pitch = 1.2;
-          utterance.rate = 0.9;
+          utterance.rate = 0.85;
           window.speechSynthesis.speak(utterance);
         }
       }
 
-      function createEpicFruitPopup(text, color) {
+      function createEpicPopup(text, color) {
         const playArea = document.getElementById("play-area");
         const alertEl = document.createElement("div");
         alertEl.className = "fruit-announcement-text";
@@ -480,123 +543,257 @@
         setTimeout(() => alertEl.remove(), 1200);
       }
 
-      const levelLevels = [
+      // --- ALL CATEGORIES DATA (10 CATEGORIES TOTAL) ---
+      const categoriesData = [
         {
-          level: 1,
-          name: "Summer Treats! ☀️",
-          target: 5,
-          fruits: [
-            { type: "apple", icon: "🍎", name: "Apple", color: "#ef4444" },
-            { type: "orange", icon: "🍊", name: "Orange", color: "#f97316" },
-            { type: "banana", icon: "🍌", name: "Banana", color: "#eab308" },
-          ],
+          id: 'fruits',
+          name: 'Fruits',
+          icon: '🍎',
+          color: '#ef4444',
+          levels: [
+            { level: 1, name: "Fresh Fruits", target: 5, items: [{ type: "apple", icon: "🍎", name: "Apple", color: "#ef4444" }, { type: "orange", icon: "🍊", name: "Orange", color: "#f97316" }, { type: "banana", icon: "🍌", name: "Banana", color: "#eab308" }] },
+            { level: 2, name: "Berry Delight", target: 6, items: [{ type: "strawberry", icon: "🍓", name: "Strawberry", color: "#f43f5e" }, { type: "grapes", icon: "🍇", name: "Grapes", color: "#a855f7" }, { type: "watermelon", icon: "🍉", name: "Watermelon", color: "#22c55e" }] },
+            { level: 3, name: "Tropical Fruits", target: 6, items: [{ type: "mango", icon: "🥭", name: "Mango", color: "#fbbf24" }, { type: "pineapple", icon: "🍍", name: "Pineapple", color: "#eab308" }, { type: "avocado", icon: "🥑", name: "Avocado", color: "#84cc16" }] },
+            { level: 4, name: "Citrus Orchard", target: 7, items: [{ type: "lemon", icon: "🍋", name: "Lemon", color: "#facc15" }, { type: "peach", icon: "🍑", name: "Peach", color: "#fb923c" }, { type: "cherry", icon: "🍒", name: "Cherry", color: "#dc2626" }] },
+            { level: 5, name: "Super Green", target: 7, items: [{ type: "kiwi", icon: "🥝", name: "Kiwi", color: "#65a30d" }, { type: "pear", icon: "🍐", name: "Pear", color: "#84cc16" }, { type: "pomegranate", icon: "🍎", name: "Pomegranate", color: "#b91c1c" }] },
+            { level: 6, name: "Melon Fun", target: 8, items: [{ type: "cantaloupe", icon: "🍈", name: "Melon", color: "#f59e0b" }, { type: "coconut", icon: "🥥", name: "Coconut", color: "#78350f" }, { type: "blueberry", icon: "🫐", name: "Blueberry", color: "#3b82f6" }] },
+            { level: 7, name: "Tangy Flavors", target: 8, items: [{ type: "grapefruit", icon: "🍊", name: "Grapefruit", color: "#f43f5e" }, { type: "lime", icon: "🍋", name: "Lime", color: "#a3e635" }, { type: "plum", icon: "🍑", name: "Plum", color: "#86198f" }] },
+            { level: 8, name: "Sweet Treats", target: 9, items: [{ type: "fig", icon: "🫐", name: "Fig", color: "#7c3aed" }, { type: "date", icon: "🌴", name: "Date", color: "#b45309" }, { type: "apricot", icon: "🍑", name: "Apricot", color: "#f97316" }] },
+            { level: 9, name: "Jungle Blast", target: 9, items: [{ type: "guava", icon: "🍏", name: "Guava", color: "#4ade80" }, { type: "dragonfruit", icon: "🌵", name: "Dragon Fruit", color: "#ec4899" }, { type: "papaya", icon: "🥭", name: "Papaya", color: "#f97316" }] },
+            { level: 10, name: "Fruit Master", target: 10, items: [{ type: "starfruit", icon: "⭐", name: "Starfruit", color: "#eab308" }, { type: "passion", icon: "🟣", name: "Passion Fruit", color: "#7c3aed" }, { type: "mangosteen", icon: "🍇", name: "Mangosteen", color: "#4c1d95" }] }
+          ]
         },
         {
-          level: 2,
-          name: "Berry Paradise! 🍓",
-          target: 6,
-          fruits: [
-            { type: "strawberry", icon: "🍓", name: "Strawberry", color: "#f43f5e" },
-            { type: "grapes", icon: "🍇", name: "Grapes", color: "#a855f7" },
-            { type: "watermelon", icon: "🍉", name: "Watermelon", color: "#22c55e" },
-          ],
+          id: 'veggies',
+          name: 'Vegetables',
+          icon: '🥦',
+          color: '#22c55e',
+          levels: [
+            { level: 1, name: "Garden Fresh", target: 5, items: [{ type: "carrot", icon: "🥕", name: "Carrot", color: "#f97316" }, { type: "broccoli", icon: "🥦", name: "Broccoli", color: "#22c55e" }, { type: "tomato", icon: "🍅", name: "Tomato", color: "#ef4444" }] },
+            { level: 2, name: "Veggie Crunch", target: 6, items: [{ type: "corn", icon: "🌽", name: "Corn", color: "#eab308" }, { type: "cucumber", icon: "🥒", name: "Cucumber", color: "#16a34a" }, { type: "eggplant", icon: "🍆", name: "Eggplant", color: "#a855f7" }] },
+            { level: 3, name: "Root Veggies", target: 6, items: [{ type: "potato", icon: "🥔", name: "Potato", color: "#ca8a04" }, { type: "onion", icon: "🧅", name: "Onion", color: "#f97316" }, { type: "garlic", icon: "🧄", name: "Garlic", color: "#e2e8f0" }] },
+            { level: 4, name: "Peppers & Leaf", target: 7, items: [{ type: "pepper", icon: "🫑", name: "Capsicum", color: "#16a34a" }, { type: "chili", icon: "🌶️", name: "Chili", color: "#dc2626" }, { type: "salad", icon: "🥗", name: "Lettuce", color: "#4ade80" }] },
+            { level: 5, name: "Super Greens", target: 7, items: [{ type: "pea", icon: "🫛", name: "Pea", color: "#65a30d" }, { type: "avocado_v", icon: "🥑", name: "Avocado", color: "#84cc16" }, { type: "mushroom", icon: "🍄", name: "Mushroom", color: "#f43f5e" }] },
+            { level: 6, name: "Healthy Roots", target: 8, items: [{ type: "beetroot", icon: "🍠", name: "Sweet Potato", color: "#b91c1c" }, { type: "radish", icon: "🥕", name: "Radish", color: "#f43f5e" }, { type: "cabbage", icon: "🥬", name: "Cabbage", color: "#22c55e" }] },
+            { level: 7, name: "Harvest Time", target: 8, items: [{ type: "pumpkin", icon: "🎃", name: "Pumpkin", color: "#ea580c" }, { type: "zucchini", icon: "🥒", name: "Zucchini", color: "#15803d" }, { type: "spinach", icon: "🥬", name: "Spinach", color: "#166534" }] },
+            { level: 8, name: "Veggie Feast", target: 9, items: [{ type: "cauliflower", icon: "🥦", name: "Cauliflower", color: "#f8fafc" }, { type: "turnip", icon: "🧅", name: "Turnip", color: "#a855f7" }, { type: "ginger_v", icon: "🫚", name: "Ginger", color: "#ca8a04" }] },
+            { level: 9, name: "Green Energy", target: 9, items: [{ type: "celery", icon: "🥬", name: "Celery", color: "#4ade80" }, { type: "asparagus", icon: "🫛", name: "Asparagus", color: "#15803d" }, { type: "corn_c", icon: "🌽", name: "Sweetcorn", color: "#facc15" }] },
+            { level: 10, name: "Master Chef", target: 10, items: [{ type: "olive", icon: "🫒", name: "Olive", color: "#65a30d" }, { type: "bean", icon: "🫘", name: "Beans", color: "#7f1d1d" }, { type: "bellpepper", icon: "🫑", name: "Bell Pepper", color: "#f97316" }] }
+          ]
         },
         {
-          level: 3,
-          name: "Exotic Jungle! 🥭",
-          target: 7,
-          fruits: [
-            { type: "mango", icon: "🥭", name: "Mango", color: "#fbbf24" },
-            { type: "pineapple", icon: "🍍", name: "Pineapple", color: "#eab308" },
-            { type: "avocado", icon: "🥑", name: "Avocado", color: "#84cc16" },
-          ],
+          id: 'colors',
+          name: 'Colors',
+          icon: '🎨',
+          color: '#ec4899',
+          levels: [
+            { level: 1, name: "Primary Colors", target: 5, items: [{ type: "red", icon: "🔴", name: "Red", color: "#ef4444" }, { type: "blue", icon: "🔵", name: "Blue", color: "#3b82f6" }, { type: "yellow", icon: "🟡", name: "Yellow", color: "#eab308" }] },
+            { level: 2, name: "Bright Colors", target: 6, items: [{ type: "green", icon: "🟢", name: "Green", color: "#22c55e" }, { type: "orange_c", icon: "🟠", name: "Orange", color: "#f97316" }, { type: "purple", icon: "🟣", name: "Purple", color: "#a855f7" }] },
+            { level: 3, name: "Soft Colors", target: 6, items: [{ type: "pink", icon: "🩷", name: "Pink", color: "#ec4899" }, { type: "brown", icon: "🟤", name: "Brown", color: "#78350f" }, { type: "black", icon: "⚫", name: "Black", color: "#1e293b" }] },
+            { level: 4, name: "Shine & Light", target: 7, items: [{ type: "white", icon: "⚪", name: "White", color: "#f8fafc" }, { type: "cyan", icon: "🩵", name: "Cyan", color: "#06b6d4" }, { type: "gold", icon: "⭐", name: "Gold", color: "#fbbf24" }] },
+            { level: 5, name: "Rainbow Fun", target: 7, items: [{ type: "violet", icon: "🟣", name: "Violet", color: "#8b5cf6" }, { type: "lime_c", icon: "🟢", name: "Lime", color: "#84cc16" }, { type: "maroon", icon: "🔴", name: "Maroon", color: "#881337" }] },
+            { level: 6, name: "Color Splash", target: 8, items: [{ type: "grey", icon: "🔘", name: "Grey", color: "#64748b" }, { type: "magenta", icon: "🩷", name: "Magenta", color: "#d946ef" }, { type: "teal", icon: "🔵", name: "Teal", color: "#0d9488" }] },
+            { level: 7, name: "Deep Shades", target: 8, items: [{ type: "navy", icon: "🔵", name: "Navy", color: "#1e3a8a" }, { type: "olive_c", icon: "🟢", name: "Olive", color: "#4d7c0f" }, { type: "peach_c", icon: "🟠", name: "Peach", color: "#fdba74" }] },
+            { level: 8, name: "Pastel Wonders", target: 9, items: [{ type: "lavender", icon: "🟣", name: "Lavender", color: "#c084fc" }, { type: "mint", icon: "🟢", name: "Mint", color: "#6ee7b7" }, { type: "coral", icon: "🔴", name: "Coral", color: "#fb7185" }] },
+            { level: 9, name: "Neon Glow", target: 9, items: [{ type: "neon_green", icon: "🟢", name: "Neon Green", color: "#4ade80" }, { type: "neon_yellow", icon: "🟡", name: "Neon Yellow", color: "#fef08a" }, { type: "neon_pink", icon: "🩷", name: "Neon Pink", color: "#f472b6" }] },
+            { level: 10, name: "Color Master", target: 10, items: [{ type: "silver", icon: "⚪", name: "Silver", color: "#cbd5e1" }, { type: "bronze", icon: "🟤", name: "Bronze", color: "#92400e" }, { type: "rainbow", icon: "🌈", name: "Rainbow", color: "#38bdf8" }] }
+          ]
         },
         {
-          level: 4,
-          name: "Citrus & Fresh! 🍋",
-          target: 8,
-          fruits: [
-            { type: "lemon", icon: "🍋", name: "Lemon", color: "#facc15" },
-            { type: "peach", icon: "🍑", name: "Peach", color: "#fb923c" },
-            { type: "cherry", icon: "🍒", name: "Cherry", color: "#dc2626" },
-          ],
+          id: 'abc',
+          name: 'ABC Alphabet',
+          icon: '🔤',
+          color: '#38bdf8',
+          levels: [
+            // Clean names (A, B, C instead of Letter A)
+            { level: 1, name: "Letters A B C", target: 5, items: [{ type: "la", icon: "🅰️", name: "A", color: "#ef4444" }, { type: "lb", icon: "🅱️", name: "B", color: "#3b82f6" }, { type: "lc", icon: "Ⓒ", name: "C", color: "#eab308" }] },
+            { level: 2, name: "Letters D E F", target: 6, items: [{ type: "ld", icon: "Ⓓ", name: "D", color: "#22c55e" }, { type: "le", icon: "Ⓔ", name: "E", color: "#a855f7" }, { type: "lf", icon: "Ⓕ", name: "F", color: "#f97316" }] },
+            { level: 3, name: "Letters G H I", target: 6, items: [{ type: "lg", icon: "Ⓖ", name: "G", color: "#ec4899" }, { type: "lh", icon: "Ⓗ", name: "H", color: "#06b6d4" }, { type: "li", icon: "Ⓘ", name: "I", color: "#84cc16" }] },
+            { level: 4, name: "Letters J K L", target: 7, items: [{ type: "lj", icon: "Ⓙ", name: "J", color: "#f59e0b" }, { type: "lk", icon: "Ⓚ", name: "K", color: "#ef4444" }, { type: "ll", icon: "Ⓛ", name: "L", color: "#3b82f6" }] },
+            { level: 5, name: "Letters M N O", target: 7, items: [{ type: "lm", icon: "Ⓜ️", name: "M", color: "#10b981" }, { type: "ln", icon: "Ⓝ", name: "N", color: "#8b5cf6" }, { type: "lo", icon: "🅾️", name: "O", color: "#f97316" }] },
+            { level: 6, name: "Letters P Q R", target: 8, items: [{ type: "lp", icon: "🅿️", name: "P", color: "#ec4899" }, { type: "lq", icon: "Ⓠ", name: "Q", color: "#06b6d4" }, { type: "lr", icon: "Ⓡ", name: "R", color: "#eab308" }] },
+            { level: 7, name: "Letters S T U", target: 8, items: [{ type: "ls", icon: "Ⓢ", name: "S", color: "#22c55e" }, { type: "lt", icon: "Ⓣ", name: "T", color: "#ef4444" }, { type: "lu", icon: "Ⓤ", name: "U", color: "#a855f7" }] },
+            { level: 8, name: "Letters V W X", target: 9, items: [{ type: "lv", icon: "Ⓥ", name: "V", color: "#f97316" }, { type: "lw", icon: "Ⓦ", name: "W", color: "#3b82f6" }, { type: "lx", icon: "Ⓧ", name: "X", color: "#10b981" }] },
+            { level: 9, name: "Letters Y Z", target: 9, items: [{ type: "ly", icon: "Ⓨ", name: "Y", color: "#eab308" }, { type: "lz", icon: "Ⓩ", name: "Z", color: "#ec4899" }, { type: "la_star", icon: "⭐", name: "Star", color: "#fbbf24" }] }
+          ]
         },
         {
-          level: 5,
-          name: "Super Foods Orchard! 🥝",
-          target: 9,
-          fruits: [
-            { type: "pomegranate", icon: "🍎", name: "Apple", color: "#b91c1c" },
-            { type: "kiwi", icon: "🥝", name: "Kiwi", color: "#65a30d" },
-            { type: "pear", icon: "🍐", name: "Pear", color: "#84cc16" },
-          ],
+          id: 'counting',
+          name: 'Counting (1 to 30)',
+          icon: '🔢',
+          color: '#f59e0b',
+          levels: [
+            // Clean names (One, Two, Three instead of Number One)
+            { level: 1, name: "Numbers 1, 2, 3", target: 5, items: [{ type: "n1", icon: "1️⃣", name: "One", color: "#ef4444" }, { type: "n2", icon: "2️⃣", name: "Two", color: "#3b82f6" }, { type: "n3", icon: "3️⃣", name: "Three", color: "#22c55e" }] },
+            { level: 2, name: "Numbers 4, 5, 6", target: 6, items: [{ type: "n4", icon: "4️⃣", name: "Four", color: "#eab308" }, { type: "n5", icon: "5️⃣", name: "Five", color: "#a855f7" }, { type: "n6", icon: "6️⃣", name: "Six", color: "#f97316" }] },
+            { level: 3, name: "Numbers 7, 8, 9", target: 6, items: [{ type: "n7", icon: "7️⃣", name: "Seven", color: "#ec4899" }, { type: "n8", icon: "8️⃣", name: "Eight", color: "#06b6d4" }, { type: "n9", icon: "9️⃣", name: "Nine", color: "#84cc16" }] },
+            { level: 4, name: "Numbers 10, 11, 12", target: 7, items: [{ type: "n10", icon: "🔟", name: "Ten", color: "#f59e0b" }, { type: "n11", icon: "1️⃣1️⃣", name: "Eleven", color: "#ef4444" }, { type: "n12", icon: "1️⃣2️⃣", name: "Twelve", color: "#3b82f6" }] },
+            { level: 5, name: "Numbers 13, 14, 15", target: 7, items: [{ type: "n13", icon: "1️⃣3️⃣", name: "Thirteen", color: "#10b981" }, { type: "n14", icon: "1️⃣4️⃣", name: "Fourteen", color: "#8b5cf6" }, { type: "n15", icon: "1️⃣5️⃣", name: "Fifteen", color: "#f97316" }] },
+            { level: 6, name: "Numbers 16, 17, 18", target: 8, items: [{ type: "n16", icon: "1️⃣6️⃣", name: "Sixteen", color: "#ec4899" }, { type: "n17", icon: "1️⃣7️⃣", name: "Seventeen", color: "#06b6d4" }, { type: "n18", icon: "1️⃣8️⃣", name: "Eighteen", color: "#eab308" }] },
+            { level: 7, name: "Numbers 19, 20, 21", target: 8, items: [{ type: "n19", icon: "1️⃣9️⃣", name: "Nineteen", color: "#22c55e" }, { type: "n20", icon: "2️⃣0️⃣", name: "Twenty", color: "#ef4444" }, { type: "n21", icon: "2️⃣1️⃣", name: "Twenty One", color: "#a855f7" }] },
+            { level: 8, name: "Numbers 22, 23, 24", target: 9, items: [{ type: "n22", icon: "2️⃣2️⃣", name: "Twenty Two", color: "#f97316" }, { type: "n23", icon: "2️⃣3️⃣", name: "Twenty Three", color: "#3b82f6" }, { type: "n24", icon: "2️⃣4️⃣", name: "Twenty Four", color: "#10b981" }] },
+            { level: 9, name: "Numbers 25, 26, 27", target: 9, items: [{ type: "n25", icon: "2️⃣5️⃣", name: "Twenty Five", color: "#eab308" }, { type: "n26", icon: "2️⃣6️⃣", name: "Twenty Six", color: "#ec4899" }, { type: "n27", icon: "2️⃣7️⃣", name: "Twenty Seven", color: "#06b6d4" }] },
+            { level: 10, name: "Numbers 28, 29, 30", target: 10, items: [{ type: "n28", icon: "2️⃣8️⃣", name: "Twenty Eight", color: "#84cc16" }, { type: "n29", icon: "2️⃣9️⃣", name: "Twenty Nine", color: "#f59e0b" }, { type: "n30", icon: "3️⃣0️⃣", name: "Thirty", color: "#ef4444" }] }
+          ]
         },
         {
-          level: 6,
-          name: "Melon Madness! 🍈",
-          target: 10,
-          fruits: [
-            { type: "cantaloupe", icon: "🍈", name: "Melon", color: "#f59e0b" },
-            { type: "coconut", icon: "🥥", name: "Coconut", color: "#78350f" },
-            { type: "blueberry", icon: "🫐", name: "Blueberry", color: "#3b82f6" },
-          ],
+          id: 'toys',
+          name: 'Cars & Toys',
+          icon: '🚗',
+          color: '#a855f7',
+          levels: [
+            { level: 1, name: "City Vehicles", target: 5, items: [{ type: "car", icon: "🚗", name: "Car", color: "#ef4444" }, { type: "truck", icon: "🚚", name: "Truck", color: "#3b82f6" }, { type: "bus", icon: "🚌", name: "Bus", color: "#eab308" }] },
+            { level: 2, name: "Emergency Fleet", target: 6, items: [{ type: "police", icon: "🚓", name: "Police Car", color: "#3b82f6" }, { type: "fire", icon: "🚒", name: "Fire Truck", color: "#ef4444" }, { type: "ambulance", icon: "🚑", name: "Ambulance", color: "#f8fafc" }] },
+            { level: 3, name: "Action Toys", target: 6, items: [{ type: "robot", icon: "🤖", name: "Robot", color: "#06b6d4" }, { type: "rocket", icon: "🚀", name: "Rocket", color: "#a855f7" }, { type: "train", icon: "🚂", name: "Train", color: "#22c55e" }] },
+            { level: 4, name: "Race & Speed", target: 7, items: [{ type: "racecar", icon: "🏎️", name: "Race Car", color: "#dc2626" }, { type: "bike", icon: "🏍️", name: "Motorbike", color: "#f97316" }, { type: "scooter", icon: "🛵", name: "Scooter", color: "#10b981" }] },
+            { level: 5, name: "Heavy Machinery", target: 7, items: [{ type: "tractor", icon: "🚜", name: "Tractor", color: "#65a30d" }, { type: "construction", icon: "🏗️", name: "Crane", color: "#ca8a04" }, { type: "taxi", icon: "🚕", name: "Taxi", color: "#facc15" }] },
+            { level: 6, name: "Fun Playtime", target: 8, items: [{ type: "teddy", icon: "🧸", name: "Teddy Bear", color: "#b45309" }, { type: "ball", icon: "⚽", name: "Ball", color: "#e2e8f0" }, { type: "blocks", icon: "🧱", name: "Blocks", color: "#ec4899" }] },
+            { level: 7, name: "Sky & Sea", target: 8, items: [{ type: "plane", icon: "✈️", name: "Airplane", color: "#0284c7" }, { type: "helicopter", icon: "🚁", name: "Helicopter", color: "#ca8a04" }, { type: "boat", icon: "⛵", name: "Boat", color: "#38bdf8" }] },
+            { level: 8, name: "Cool Vehicles", target: 9, items: [{ type: "monster_truck", icon: "🛻", name: "Pickup Truck", color: "#475569" }, { type: "cablecar", icon: "🚡", name: "Cable Car", color: "#7c3aed" }, { type: "tram", icon: "🚋", name: "Tram", color: "#059669" }] },
+            { level: 9, name: "Super Toys", target: 9, items: [{ type: "ufo", icon: "🛸", name: "UFO", color: "#c084fc" }, { type: "yo_yo", icon: "🪀", name: "Yo Yo", color: "#ef4444" }, { type: "kite", icon: "🪁", name: "Kite", color: "#f43f5e" }] },
+            { level: 10, name: "Ultimate Toybox", target: 10, items: [{ type: "monster_rc", icon: "🚙", name: "Monster Car", color: "#16a34a" }, { type: "drone", icon: "🚁", name: "Drone", color: "#0284c7" }, { type: "crown_toy", icon: "👑", name: "Crown", color: "#fbbf24" }] }
+          ]
         },
         {
-          level: 7,
-          name: "Citrus Boost! 🍊",
-          target: 11,
-          fruits: [
-            { type: "grapefruit", icon: "🍊", name: "Grapefruit", color: "#f43f5e" },
-            { type: "lime", icon: "🍋", name: "Lime", color: "#a3e635" },
-            { type: "plum", icon: "🍑", name: "Plum", color: "#86198f" },
-          ],
+          id: 'body',
+          name: 'Parts of Body',
+          icon: '🖐️',
+          color: '#10b981',
+          levels: [
+            { level: 1, name: "Face & Head", target: 5, items: [{ type: "eye", icon: "👁️", name: "Eye", color: "#3b82f6" }, { type: "ear", icon: "👂", name: "Ear", color: "#f97316" }, { type: "nose", icon: "👃", name: "Nose", color: "#ef4444" }] },
+            { level: 2, name: "Hands & Feet", target: 6, items: [{ type: "hand", icon: "🖐️", name: "Hand", color: "#eab308" }, { type: "foot", icon: "🦶", name: "Foot", color: "#22c55e" }, { type: "arm", icon: "🦾", name: "Arm", color: "#a855f7" }] },
+            { level: 3, name: "Smile & Voice", target: 6, items: [{ type: "mouth", icon: "👄", name: "Mouth", color: "#f43f5e" }, { type: "tooth", icon: "🦷", name: "Tooth", color: "#f8fafc" }, { type: "tongue", icon: "👅", name: "Tongue", color: "#ec4899" }] },
+            { level: 4, name: "Upper Body", target: 7, items: [{ type: "brain", icon: "🧠", name: "Brain", color: "#f472b6" }, { type: "heart", icon: "🫀", name: "Heart", color: "#dc2626" }, { type: "bone", icon: "🦴", name: "Bone", color: "#e2e8f0" }] },
+            { level: 5, name: "Sensory Parts", target: 7, items: [{ type: "hair", icon: "💇", name: "Hair", color: "#475569" }, { type: "muscle", icon: "🏋️", name: "Muscle", color: "#ea580c" }, { type: "face", icon: "😀", name: "Face", color: "#fbbf24" }] },
+            { level: 6, name: "Body Actions", target: 8, items: [{ type: "leg", icon: "🦵", name: "Leg", color: "#16a34a" }, { type: "thumb", icon: "👍", name: "Thumb", color: "#eab308" }, { type: "fist", icon: "✊", name: "Fist", color: "#b45309" }] },
+            { level: 7, name: "Expressions", target: 8, items: [{ type: "wink", icon: "😜", name: "Wink Eye", color: "#f59e0b" }, { type: "clap", icon: "👏", name: "Clapping Hands", color: "#eab308" }, { type: "wave", icon: "👋", name: "Waving Hand", color: "#38bdf8" }] },
+            { level: 8, name: "Movement Parts", target: 9, items: [{ type: "run_leg", icon: "🏃", name: "Running Legs", color: "#22c55e" }, { type: "punch", icon: "👊", name: "Punch Hand", color: "#ef4444" }, { type: "point", icon: "👉", name: "Finger Point", color: "#f97316" }] },
+            { level: 9, name: "Senses Master", target: 9, items: [{ type: "look_eye", icon: "👀", name: "Looking Eyes", color: "#06b6d4" }, { type: "hear_ear", icon: "🎧", name: "Hearing Ear", color: "#a855f7" }, { type: "kiss_lip", icon: "💋", name: "Lips", color: "#f43f5e" }] },
+            { level: 10, name: "Body Champion", target: 10, items: [{ type: "full_body", icon: "🧍", name: "Full Body", color: "#4ade80" }, { type: "mind", icon: "🧩", name: "Clever Mind", color: "#38bdf8" }, { type: "fist_bump", icon: "🤛", name: "Fist Bump", color: "#fbbf24" }] }
+          ]
         },
         {
-          level: 8,
-          name: "Sweet Harvest! 🌴",
-          target: 12,
-          fruits: [
-            { type: "ginger", icon: "🫚", name: "Ginger", color: "#a21caf" },
-            { type: "date", icon: "🌴", name: "Date", color: "#b45309" },
-            { type: "apricot", icon: "🍑", name: "Apricot", color: "#f97316" },
-          ],
+          id: 'animals',
+          name: 'Animals & Birds',
+          icon: '🐶',
+          color: '#f43f5e',
+          levels: [
+            { level: 1, name: "Cute Pets", target: 5, items: [{ type: "dog", icon: "🐶", name: "Dog", color: "#f97316" }, { type: "cat", icon: "🐱", name: "Cat", color: "#eab308" }, { type: "rabbit", icon: "🐰", name: "Rabbit", color: "#f8fafc" }] },
+            { level: 2, name: "Jungle Animals", target: 6, items: [{ type: "lion", icon: "🦁", name: "Lion", color: "#f59e0b" }, { type: "tiger", icon: "🐯", name: "Tiger", color: "#ea580c" }, { type: "monkey", icon: "🐒", name: "Monkey", color: "#78350f" }] },
+            { level: 3, name: "Farm Friends", target: 6, items: [{ type: "cow", icon: "🐮", name: "Cow", color: "#1e293b" }, { type: "horse", icon: "🐴", name: "Horse", color: "#b45309" }, { type: "sheep", icon: "🐑", name: "Sheep", color: "#e2e8f0" }] },
+            { level: 4, name: "Birds Kingdom", target: 7, items: [{ type: "parrot", icon: "🦜", name: "Parrot", color: "#22c55e" }, { type: "duck", icon: "🦆", name: "Duck", color: "#0284c7" }, { type: "owl", icon: "🦉", name: "Owl", color: "#7c3aed" }] },
+            { level: 5, name: "Sea Life", target: 7, items: [{ type: "fish", icon: "🐟", name: "Fish", color: "#38bdf8" }, { type: "dolphin", icon: "🐬", name: "Dolphin", color: "#0284c7" }, { type: "octopus", icon: "🐙", name: "Octopus", color: "#ec4899" }] },
+            { level: 6, name: "Forest Safari", target: 8, items: [{ type: "elephant", icon: "🐘", name: "Elephant", color: "#64748b" }, { type: "giraffe", icon: "🦒", name: "Giraffe", color: "#f59e0b" }, { type: "zebra", icon: "🦓", name: "Zebra", color: "#e2e8f0" }] },
+            { level: 7, name: "Tiny Insects", target: 8, items: [{ type: "butterfly", icon: "🦋", name: "Butterfly", color: "#a855f7" }, { type: "bee", icon: "🐝", name: "Honey Bee", color: "#facc15" }, { type: "ladybug", icon: "🐞", name: "Ladybug", color: "#ef4444" }] },
+            { level: 8, name: "Wild Safari", target: 9, items: [{ type: "bear", icon: "🐻", name: "Bear", color: "#78350f" }, { type: "panda", icon: "🐼", name: "Panda", color: "#1e293b" }, { type: "koala", icon: "🐨", name: "Koala", color: "#94a3b8" }] },
+            { level: 9, name: "Ocean Friends", target: 9, items: [{ type: "whale", icon: "🐳", name: "Whale", color: "#0284c7" }, { type: "turtle", icon: "🐢", name: "Turtle", color: "#16a34a" }, { type: "crab", icon: "🦀", name: "Crab", color: "#dc2626" }] },
+            { level: 10, name: "Animal Master", target: 10, items: [{ type: "unicorn", icon: "🦄", name: "Unicorn", color: "#f472b6" }, { type: "dragon", icon: "🐲", name: "Dragon", color: "#22c55e" }, { type: "peacock", icon: "🦚", name: "Peacock", color: "#0369a1" }] }
+          ]
         },
         {
-          level: 9,
-          name: "Tropical Blast! 🥭",
-          target: 14,
-          fruits: [
-            { type: "mango", icon: "🥭", name: "mango", color: "#f97316" },
-            { type: "guava", icon: "🍏", name: "Guava", color: "#4ade80" },
-            { type: "dragonfruit", icon: "🌵", name: "DragonFruit", color: "#ec4899" },
-          ],
+          // NEW CATEGORY 9: Shapes & Math Signs
+          id: 'shapes',
+          name: 'Shapes & Symbols',
+          icon: '📐',
+          color: '#8b5cf6',
+          levels: [
+            { level: 1, name: "Basic Shapes", target: 5, items: [{ type: "circle", icon: "🔴", name: "Circle", color: "#ef4444" }, { type: "square", icon: "🟧", name: "Square", color: "#f97316" }, { type: "triangle", icon: "🔺", name: "Triangle", color: "#eab308" }] },
+            { level: 2, name: "Star & Heart", target: 6, items: [{ type: "star", icon: "⭐", name: "Star", color: "#fbbf24" }, { type: "heart", icon: "❤️", name: "Heart", color: "#f43f5e" }, { type: "diamond", icon: "🔷", name: "Diamond", color: "#3b82f6" }] },
+            { level: 3, name: "More Shapes", target: 6, items: [{ type: "oval", icon: "🌰", name: "Oval", color: "#a855f7" }, { type: "cross", icon: "✖️", name: "Cross", color: "#ef4444" }, { type: "check", icon: "✔️", name: "Check Mark", color: "#22c55e" }] },
+            { level: 4, name: "Math Signs", target: 7, items: [{ type: "plus", icon: "➕", name: "Plus", color: "#22c55e" }, { type: "minus", icon: "➖", name: "Minus", color: "#ef4444" }, { type: "multiply", icon: "✖️", name: "Multiply", color: "#3b82f6" }] },
+            { level: 5, name: "Smart Symbols", target: 7, items: [{ type: "divide", icon: "➗", name: "Divide", color: "#eab308" }, { type: "equal", icon: "🟰", name: "Equals", color: "#a855f7" }, { type: "question", icon: "❓", name: "Question", color: "#f43f5e" }] },
+            { level: 6, name: "Geometry Fun", target: 8, items: [{ type: "hexagon", icon: "🛑", name: "Hexagon", color: "#dc2626" }, { type: "ring", icon: "⭕", name: "Ring", color: "#06b6d4" }, { type: "box", icon: "📦", name: "Box", color: "#b45309" }] },
+            { level: 7, name: "Symbols Match", target: 8, items: [{ type: "exclamation", icon: "❗", name: "Exclamation", color: "#f97316" }, { type: "dollar", icon: "💲", name: "Dollar", color: "#16a34a" }, { type: "percent", icon: "%", name: "Percent", color: "#ec4899" }] },
+            { level: 8, name: "Arrows & Direction", target: 9, items: [{ type: "arrow_up", icon: "⬆️", name: "Up Arrow", color: "#3b82f6" }, { type: "arrow_down", icon: "⬇️", name: "Down Arrow", color: "#ef4444" }, { type: "arrow_right", icon: "➡️", name: "Right Arrow", color: "#22c55e" }] },
+            { level: 9, name: "Space Shapes", target: 9, items: [{ type: "moon", icon: "🌙", name: "Crescent Moon", color: "#facc15" }, { type: "sun", icon: "☀️", name: "Sun Shape", color: "#f59e0b" }, { type: "sparkle", icon: "💖", name: "Sparkle Heart", color: "#ec4899" }] },
+            { level: 10, name: "Shapes Master", target: 10, items: [{ type: "cube", icon: "🧊", name: "Ice Cube", color: "#38bdf8" }, { type: "pyramid", icon: "🔺", name: "Pyramid", color: "#ea580c" }, { type: "badge", icon: "🔰", name: "Shield Shape", color: "#84cc16" }] }
+          ]
         },
         {
-          level: 10,
-          name: "Grand Fruit Feast! 👑",
-          target: 15,
-          fruits: [
-            { type: "starfruit", icon: "⭐", name: "Starfruit", color: "#eab308" },
-            { type: "passionfruit", icon: "🟣", name: "Passion", color: "#7c3aed" },
-            { type: "mangosteen", icon: "🍇", name: "Mangosteen", color: "#4c1d95" },
-          ],
-        },
+          // CATEGORY 10: IQ MIX CHALLENGE
+          id: 'iq_mix',
+          name: 'IQ Mix Challenge',
+          icon: '🧠',
+          color: '#06b6d4',
+          levels: [] // Dynamically generated in script below
+        }
       ];
 
-      let currentLvlIdx = 0;
-      let state = { score: 0, coins: 0, activeFruit: null, spawnTimer: null };
+      // DYNAMIC IQ MIX LEVEL GENERATOR (PULLS FROM ALL 9 CATEGORIES)
+      (function buildIQMixLevels() {
+        const iqCategory = categoriesData.find(c => c.id === 'iq_mix');
+        const allItemsList = [];
 
-      function loadLevel(idx) {
-        currentLvlIdx = idx;
-        const config = levelLevels[currentLvlIdx];
+        // Collect all items from categories 1 to 9
+        categoriesData.forEach(cat => {
+          if (cat.id !== 'iq_mix') {
+            cat.levels.forEach(lvl => {
+              lvl.items.forEach(item => {
+                if (!allItemsList.some(i => i.type === item.type)) {
+                  allItemsList.push(item);
+                }
+              });
+            });
+          }
+        });
+
+        // Create 10 challenging IQ levels with mixed items
+        for (let l = 1; l <= 10; l++) {
+          const target = 5 + Math.min(l, 5); // Target increases with levels
+          const shuffled = [...allItemsList].sort(() => 0.5 - Math.random());
+          const levelItems = shuffled.slice(0, 3 + (l % 2)); // 3 or 4 mixed items per level
+
+          iqCategory.levels.push({
+            level: l,
+            name: `IQ Test Level ${l}`,
+            target: target,
+            items: levelItems
+          });
+        }
+      })();
+
+      let currentCatIdx = 0;
+      let currentLvlIdx = 0;
+      let state = { score: 0, coins: 0, activeItem: null, spawnTimer: null };
+
+      function populateCategories() {
+        const grid = document.getElementById("category-grid");
+        grid.innerHTML = "";
+        categoriesData.forEach((cat, index) => {
+          const card = document.createElement("div");
+          card.className = "cat-card";
+          card.style.borderColor = cat.color;
+          card.innerHTML = `
+            <div class="cat-icon">${cat.icon}</div>
+            <div class="cat-label">${cat.name}</div>
+            <div class="cat-badge">${cat.levels.length} Levels</div>
+          `;
+          card.onclick = () => selectCategory(index);
+          grid.appendChild(card);
+        });
+      }
+
+      function openCategoryMenu() {
+        if (state.spawnTimer) clearInterval(state.spawnTimer);
+        document.getElementById("category-screen").style.display = "flex";
+      }
+
+      function selectCategory(catIndex) {
+        currentCatIdx = catIndex;
+        document.getElementById("category-screen").style.display = "none";
+        loadLevel(0);
+      }
+
+      function loadLevel(lvlIdx) {
+        currentLvlIdx = lvlIdx;
+        const currentCat = categoriesData[currentCatIdx];
+        const config = currentCat.levels[currentLvlIdx];
 
         state.score = 0;
-        state.activeFruit = null;
+        state.activeItem = null;
 
-        document
-          .getElementById("play-area")
-          .querySelectorAll(".fruit-item")
-          .forEach((e) => e.remove());
+        document.getElementById("active-cat-title").innerText = `${currentCat.name} ${currentCat.icon}`;
+        document.getElementById("play-area").querySelectorAll(".fruit-item").forEach((e) => e.remove());
 
         document.getElementById("level-display").innerText = `Level ${config.level}`;
         document.getElementById("objective-label").innerText = `${config.name} (Goal: ${config.target})`;
@@ -604,17 +801,17 @@
         const basketContainer = document.getElementById("basket-container");
         basketContainer.innerHTML = "";
 
-        config.fruits.forEach((f) => {
+        config.items.forEach((item) => {
           const bEl = document.createElement("div");
           bEl.className = "fruit-basket";
-          bEl.style.borderColor = f.color;
-          bEl.style.boxShadow = `0 0 12px ${f.color}33`;
+          bEl.style.borderColor = item.color;
+          bEl.style.boxShadow = `0 0 12px ${item.color}33`;
           bEl.innerHTML = `
-            <div class="basket-icon">${f.icon}</div>
-            <div class="basket-label" style="color: ${f.color}">${f.name}</div>
+            <div class="basket-icon">${item.icon}</div>
+            <div class="basket-label" style="color: ${item.color}">${item.name}</div>
           `;
 
-          const triggerAction = () => attemptMatch(f.type);
+          const triggerAction = () => attemptMatch(item.type);
           bEl.addEventListener("click", triggerAction);
           bEl.addEventListener("touchstart", (e) => {
             e.preventDefault();
@@ -627,28 +824,29 @@
         updateHUD();
 
         if (state.spawnTimer) clearInterval(state.spawnTimer);
-        state.spawnTimer = setInterval(spawnFruit, 1900);
+        state.spawnTimer = setInterval(spawnItem, 1900);
 
         for (let i = 0; i < 3; i++) {
-          spawnFruit();
+          spawnItem();
         }
       }
 
-      function spawnFruit() {
-        const config = levelLevels[currentLvlIdx];
+      function spawnItem() {
+        const currentCat = categoriesData[currentCatIdx];
+        const config = currentCat.levels[currentLvlIdx];
         if (state.score >= config.target) return;
 
         const playArea = document.getElementById("play-area");
-        const fruit = config.fruits[Math.floor(Math.random() * config.fruits.length)];
+        const itemObj = config.items[Math.floor(Math.random() * config.items.length)];
 
         const element = document.createElement("div");
         element.className = "fruit-item";
-        element.id = `fr-${Date.now()}-${Math.random()}`;
-        element.dataset.type = fruit.type;
-        element.style.filter = `drop-shadow(0 0 14px ${fruit.color})`;
+        element.id = `item-${Date.now()}-${Math.random()}`;
+        element.dataset.type = itemObj.type;
+        element.style.filter = `drop-shadow(0 0 14px ${itemObj.color})`;
         element.innerHTML = `
-          <div class="fruit-text-hint" style="border-color: ${fruit.color}; color: ${fruit.color}">${fruit.name} ${fruit.icon}</div>
-          <span style="font-size: 3.6rem; display: block;">${fruit.icon}</span>
+          <div class="fruit-text-hint" style="border-color: ${itemObj.color}; color: ${itemObj.color}">${itemObj.name} ${itemObj.icon}</div>
+          <span style="font-size: 3.4rem; display: block;">${itemObj.icon}</span>
         `;
 
         const x = Math.floor(Math.random() * 70) + 5;
@@ -658,7 +856,7 @@
 
         const triggerSelect = (e) => {
           initAudio();
-          selectFruit(element);
+          selectItem(element);
           e.stopPropagation();
           e.preventDefault();
         };
@@ -669,35 +867,34 @@
         playArea.appendChild(element);
       }
 
-      function selectFruit(element) {
+      function selectItem(element) {
         playTone(450, "sine", 0.05);
-        document
-          .querySelectorAll(".fruit-item")
-          .forEach((f) => f.classList.remove("selected"));
-        state.activeFruit = element;
+        document.querySelectorAll(".fruit-item").forEach((f) => f.classList.remove("selected"));
+        state.activeItem = element;
         element.classList.add("selected");
       }
 
       function attemptMatch(basketType) {
         initAudio();
-        if (!state.activeFruit) {
+        if (!state.activeItem) {
           playErrorSound();
           return;
         }
 
-        const fruitType = state.activeFruit.dataset.type;
-        const config = levelLevels[currentLvlIdx];
+        const itemType = state.activeItem.dataset.type;
+        const currentCat = categoriesData[currentCatIdx];
+        const config = currentCat.levels[currentLvlIdx];
 
-        if (fruitType === basketType) {
+        if (itemType === basketType) {
           playSuccessSound();
 
-          const matchedFruitObj = config.fruits.find((f) => f.type === fruitType);
+          const matchedObj = config.items.find((f) => f.type === itemType);
 
-          if (matchedFruitObj) {
-            speakFruitName(matchedFruitObj.name);
-            createEpicFruitPopup(
-              `${matchedFruitObj.icon} ${matchedFruitObj.name}!`,
-              matchedFruitObj.color
+          if (matchedObj) {
+            speakText(matchedObj.name);
+            createEpicPopup(
+              `${matchedObj.icon} ${matchedObj.name}!`,
+              matchedObj.color
             );
           }
 
@@ -710,8 +907,8 @@
             window.innerHeight / 2
           );
 
-          state.activeFruit.remove();
-          state.activeFruit = null;
+          state.activeItem.remove();
+          state.activeItem = null;
 
           updateHUD();
           checkWin();
@@ -736,7 +933,8 @@
       }
 
       function updateHUD() {
-        const config = levelLevels[currentLvlIdx];
+        const currentCat = categoriesData[currentCatIdx];
+        const config = currentCat.levels[currentLvlIdx];
         document.getElementById("coin-count").innerText = state.coins;
 
         const percentage = (state.score / config.target) * 100;
@@ -744,7 +942,8 @@
       }
 
       function checkWin() {
-        const config = levelLevels[currentLvlIdx];
+        const currentCat = categoriesData[currentCatIdx];
+        const config = currentCat.levels[currentLvlIdx];
         if (state.score >= config.target) {
           clearInterval(state.spawnTimer);
           document.querySelectorAll(".fruit-item").forEach((f) => f.remove());
@@ -762,39 +961,42 @@
         const desc = document.getElementById("modal-desc");
         const btn = document.getElementById("modal-action-btn");
         const emoji = document.getElementById("modal-emoji");
+        const currentCat = categoriesData[currentCatIdx];
 
-        if (currentLvlIdx < levelLevels.length - 1) {
-          const nextLevelNum = levelLevels[currentLvlIdx + 1].level;
+        if (currentLvlIdx < currentCat.levels.length - 1) {
+          const nextLevelNum = currentCat.levels[currentLvlIdx + 1].level;
           emoji.innerText = "🎉🎈";
-          title.innerText = `Level ${levelLevels[currentLvlIdx].level} Cleared!`;
-          desc.innerText = "Fantastic matching skill! Ready for the next fruit group?";
+          title.innerText = `Level ${currentCat.levels[currentLvlIdx].level} Cleared!`;
+          desc.innerText = `Great job matching ${currentCat.name}! Ready for the next level?`;
           btn.innerText = `START LEVEL ${nextLevelNum} ➔`;
         } else {
           emoji.innerText = "👑🏆";
-          title.innerText = "Fruit Catch Champion!";
-          desc.innerText = "Unbelievable! You completed all 10 levels perfectly. You are a super kid!";
-          btn.innerText = "PLAY AGAIN (RESET)";
+          title.innerText = `${currentCat.name} Master!`;
+          desc.innerText = `Awesome! You completed all ${currentCat.levels.length} levels in ${currentCat.name}!`;
+          btn.innerText = "CHOOSE ANOTHER CATEGORY 🏠";
         }
         modal.style.display = "flex";
       }
 
       function modalAction() {
         document.getElementById("victory-modal").style.display = "none";
-        if (currentLvlIdx < levelLevels.length - 1) {
+        const currentCat = categoriesData[currentCatIdx];
+
+        if (currentLvlIdx < currentCat.levels.length - 1) {
           loadLevel(currentLvlIdx + 1);
         } else {
-          state.coins = 0;
-          loadLevel(0);
+          openCategoryMenu();
         }
       }
 
       window.onload = () => {
-        loadLevel(0);
+        populateCategories();
+        openCategoryMenu();
+
         if ("speechSynthesis" in window) {
           window.speechSynthesis.getVoices();
           if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = () =>
-              window.speechSynthesis.getVoices();
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
           }
         }
         document.body.addEventListener("touchstart", initAudio, { passive: true });
