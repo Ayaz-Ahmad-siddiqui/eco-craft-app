@@ -3,3 +3,5 @@ node_modules/
 .env.local
 dist/
 build/
+google-services.json
+**/android/app/google-services.json
