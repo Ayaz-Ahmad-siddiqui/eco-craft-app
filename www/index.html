@@ -434,7 +434,6 @@
             { level: 7, name: "Letters S T U", target: 8, items: [{ type: "ls", icon: "S", name: "S", color: "#22c55e", isText: true }, { type: "lt", icon: "T", name: "T", color: "#ef4444", isText: true }, { type: "lu", icon: "U", name: "U", color: "#a855f7", isText: true }] },
             { level: 8, name: "Letters V W X", target: 9, items: [{ type: "lv", icon: "V", name: "V", color: "#f97316", isText: true }, { type: "lw", icon: "W", name: "W", color: "#3b82f6", isText: true }, { type: "lx", icon: "X", name: "X", color: "#10b981", isText: true }] },
             { level: 9, name: "Letters Y Z Star", target: 9, items: [{ type: "ly", icon: "Y", name: "Y", color: "#eab308", isText: true }, { type: "lz", icon: "Z", name: "Z", color: "#ec4899", isText: true }, { type: "la_star", icon: "⭐", name: "Star", color: "#fbbf24" }] },
-            /* LEVEL 10 ADDED FOR ABC ALPHABET CATEGORY COMPLETE FLOW */
             { level: 10, name: "ABC Master Level", target: 10, items: [{ type: "lx_m", icon: "X", name: "X", color: "#10b981", isText: true }, { type: "ly_m", icon: "Y", name: "Y", color: "#eab308", isText: true }, { type: "lz_m", icon: "Z", name: "Z", color: "#ec4899", isText: true }] }
           ]
         },
@@ -760,6 +759,7 @@
         currentCategory = cat; currentLevelIndex = levelIdx;
         document.getElementById("category-screen").style.display = "none";
         document.getElementById("active-cat-title").innerText = `${cat.name} ${cat.icon}`;
+        window.history.pushState({ inGame: true }, "");
         loadCurrentLevel();
       }
 

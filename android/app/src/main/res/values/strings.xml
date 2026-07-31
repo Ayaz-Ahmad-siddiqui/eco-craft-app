@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Preschool Learning</string>
-    <string name="title_activity_main">Preschool Learning</string>
-    <string name="package_name">com.preschoolLearning.islandprotector</string>
-    <string name="custom_url_scheme">com.preschoolLearning.islandprotector</string>
+    <string name="app_name">MatchyKids</string>
+    <string name="title_activity_main">MatchyKids</string>
+    <string name="package_name">com.matchykids.app</string>
+    <string name="custom_url_scheme">com.matchykids.app</string>
 </resources>
