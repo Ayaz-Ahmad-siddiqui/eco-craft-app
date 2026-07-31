@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "514072878587",
+    "project_id": "matchykids-89ec6",
+    "storage_bucket": "matchykids-89ec6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:514072878587:android:dc0eced0451e7b8e71bf5e",
+        "android_client_info": {
+          "package_name": "com.matchykids.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArCeVLtzWCguZRVziY-lI1FKILyX63bkU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
