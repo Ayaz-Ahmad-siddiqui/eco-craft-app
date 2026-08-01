@@ -1,4 +1,4 @@
-package com.ecocraft.islandprotector;
+package com.matchykids.app;
 
 import android.os.Bundle;
 import android.webkit.WebSettings;

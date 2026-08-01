@@ -1,5 +1,10 @@
 {
-  "appId": "com.ecocraft.islandprotector",
-  "appName": "Eco Craft",
-  "webDir": "www"
+  "appId": "com.matchykids.app",
+  "appName": "MatchyKids",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true,
+    "backgroundColor": "#000000",
+    "appendUserAgent": "MatchyKidsNativeApp"
+  }
 }

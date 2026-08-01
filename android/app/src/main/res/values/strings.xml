@@ -4,4 +4,8 @@
     <string name="title_activity_main">MatchyKids</string>
     <string name="package_name">com.matchykids.app</string>
     <string name="custom_url_scheme">com.matchykids.app</string>
+
+    <!-- AdMob Credentials -->
+    <string name="admob_app_id">ca-app-pub-8636253253293445~1369957370</string>
+    <string name="admob_banner_id">ca-app-pub-8636253253293445/3544840369</string>
 </resources>
