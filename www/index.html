@@ -7,554 +7,16 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>MatchyKids: Toddler Match & Learn</title>
+
+    <!-- Firebase Online/Offline Analytics Support -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
+
     <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <style>
-      @import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700;900&display=swap");
-
-      :root {
-        --bg-grad: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-        --primary: #3b82f6;
-        --accent: #facc15;
-        --success: #10b981;
-        --danger: #ef4444;
-        --glass: rgba(255, 255, 255, 0.08);
-        --glass-border: rgba(255, 255, 255, 0.15);
-      }
-
-      * {
-        box-sizing: border-box;
-        user-select: none;
-        -webkit-user-select: none;
-        -webkit-touch-callout: none;
-        margin: 0;
-        padding: 0;
-      }
-      
-      html, body {
-        width: 100vw;
-        height: 100vh;
-        height: 100dvh;
-        overflow: hidden;
-        position: fixed;
-        background-color: #0f172a !important;
-        background-image: var(--bg-grad) !important;
-        background-attachment: fixed;
-        overscroll-behavior: none;
-        -webkit-overscroll-behavior: none;
-        -webkit-backface-visibility: hidden;
-        backface-visibility: hidden;
-      }
-
-      body {
-        font-family: "Fredoka", "Segoe UI", sans-serif;
-        color: #fff;
-        -webkit-tap-highlight-color: transparent;
-        display: flex;
-        flex-direction: column;
-        padding-bottom: env(safe-area-inset-bottom);
-        padding-top: env(safe-area-inset-top);
-      }
-
-      /* SPLASH SCREEN */
-      #splash-screen {
-        position: fixed;
-        inset: 0;
-        background: var(--bg-grad);
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        opacity: 1;
-        transition: opacity 0.6s ease-out;
-        will-change: opacity;
-        transform: translateZ(0);
-      }
-      .splash-icon {
-        font-size: 5rem;
-        animation: bounce 1.5s infinite alternate;
-        filter: drop-shadow(0 10px 20px rgba(59, 130, 246, 0.5));
-      }
-      .splash-title {
-        font-size: clamp(2rem, 6vw, 3rem);
-        font-weight: 900;
-        background: linear-gradient(90deg, #facc15, #f97316, #38bdf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      .splash-loader-bar {
-        width: 200px;
-        height: 8px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        overflow: hidden;
-        margin-top: 20px;
-      }
-      .splash-loader-fill {
-        height: 100%;
-        width: 0%;
-        background: linear-gradient(90deg, #3b82f6, #10b981, #facc15);
-        animation: fill 2s forwards;
-      }
-
-      @keyframes bounce {
-        0% { transform: translateY(0); }
-        100% { transform: translateY(-15px); }
-      }
-      @keyframes fill {
-        0% { width: 0; }
-        100% { width: 100%; }
-      }
-
-      /* HUD & UI */
-      .hud {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 14px;
-        background: rgba(15, 23, 42, 0.95);
-        border-bottom: 1px solid var(--glass-border);
-        z-index: 20;
-        position: relative;
-        height: 56px;
-        flex-shrink: 0;
-        transform: translateZ(0);
-      }
-      .hud-left,
-      .hud-right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .btn-nav {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 8px 14px;
-        border-radius: 12px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: transform 0.1s;
-        font-family: "Fredoka", sans-serif;
-      }
-      .btn-nav:active {
-        transform: scale(0.95);
-      }
-      .stat-box {
-        background: var(--glass);
-        padding: 4px 10px;
-        border-radius: 20px;
-        border: 1px solid var(--glass-border);
-        font-weight: bold;
-        font-size: 0.9rem;
-      }
-      .progress-container {
-        width: 100%;
-        height: 6px;
-        background: rgba(255, 255, 255, 0.1);
-        z-index: 20;
-        flex-shrink: 0;
-      }
-      .progress-fill {
-        height: 100%;
-        width: 0%;
-        background: linear-gradient(90deg, #10b981, #3b82f6);
-        transition: width 0.3s;
-      }
-
-      /* GAME PLAY AREA */
-      #play-area {
-        position: relative;
-        width: 100vw;
-        flex: 1;
-        overflow: hidden;
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        backface-visibility: hidden;
-      }
-      .level-banner {
-        position: absolute;
-        top: 8px;
-        width: 100%;
-        text-align: center;
-        pointer-events: none;
-        z-index: 10;
-        font-size: clamp(1.1rem, 3.5vw, 1.6rem);
-        font-weight: 900;
-        letter-spacing: 1px;
-        color: #fff;
-        text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-      }
-
-      /* FLOATING ITEMS (OPTIMIZED HARDWARE ACCELERATION) */
-      .fruit-item {
-        position: absolute;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        animation: floatAnim 3s infinite ease-in-out alternate;
-        z-index: 5;
-        touch-action: manipulation;
-        transition: transform 0.15s ease-out;
-        padding: 4px;
-        border-radius: 18px;
-        min-width: 75px;
-        height: 75px;
-        will-change: transform, opacity;
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
-        backface-visibility: hidden;
-      }
-      .fruit-item:hover {
-        transform: scale(1.1) translateZ(0);
-      }
-      .fruit-item:active,
-      .fruit-item.selected {
-        transform: scale(1.15) translateZ(0) !important;
-        filter: drop-shadow(0 0 12px var(--accent)) !important;
-        z-index: 15;
-      }
-
-      .fruit-icon-large {
-        font-size: clamp(2rem, 5vw, 3.2rem);
-        font-weight: 900;
-        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
-        line-height: 1;
-        white-space: nowrap;
-      }
-
-      .text-item .fruit-icon-large {
-        color: #ffffff;
-        text-shadow: 0 4px 0px rgba(0, 0, 0, 0.3);
-      }
-
-      .fruit-text-hint {
-        font-size: 0.75rem;
-        font-weight: 800;
-        padding: 2px 6px;
-        border-radius: 8px;
-        background: rgba(0, 0, 0, 0.75);
-        border: 1px solid;
-        margin-bottom: 2px;
-      }
-      .no-badge .fruit-text-hint,
-      .no-badge .basket-label {
-        display: none !important;
-      }
-
-      @keyframes floatAnim {
-        0% { transform: translateY(0px) rotate(-3deg) translateZ(0); }
-        100% { transform: translateY(-8px) rotate(3deg) translateZ(0); }
-      }
-
-      /* BASKETS CONTAINER */
-      #basket-container {
-        width: 100%;
-        min-height: 95px;
-        height: auto;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        align-content: center;
-        gap: clamp(6px, 2vw, 10px);
-        padding: 8px clamp(8px, 3vw, 16px) calc(8px + env(safe-area-inset-bottom));
-        background: rgba(15, 23, 42, 0.95);
-        border-top: 1px solid var(--glass-border);
-        z-index: 30;
-        overflow: visible;
-        flex-shrink: 0;
-        box-sizing: border-box;
-        max-width: 900px;
-        margin: 0 auto;
-        transform: translateZ(0);
-      }
-      .fruit-basket {
-        flex: 1 1 85px;
-        min-width: 78px;
-        max-width: 130px;
-        min-height: 75px;
-        height: auto;
-        border: 2px dashed;
-        border-radius: 16px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.05);
-        transition: transform 0.15s ease-out;
-        padding: 6px 4px;
-        box-sizing: border-box;
-        will-change: transform;
-        transform: translateZ(0);
-      }
-      .fruit-basket:active {
-        transform: scale(0.95) translateZ(0);
-      }
-
-      @media (max-width: 340px) {
-        .fruit-basket {
-          min-width: 70px;
-          padding: 4px 2px;
-        }
-      }
-
-      /* CATEGORY / MAIN MENU */
-      #category-screen {
-        position: fixed;
-        inset: 0;
-        background: #0f172a;
-        background-image: var(--bg-grad);
-        z-index: 100;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 15px 15px calc(15px + env(safe-area-inset-bottom));
-        overflow-y: auto;
-        transform: translateZ(0);
-      }
-      .home-header {
-        width: 100%;
-        max-width: 1100px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-      }
-      .daily-streak-widget {
-        width: 100%;
-        max-width: 1100px;
-        background: rgba(30, 41, 59, 0.8);
-        border: 1px solid var(--glass-border);
-        border-radius: 16px;
-        padding: 10px;
-        margin-bottom: 12px;
-      }
-      .streak-days-container {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 6px;
-        margin-top: 8px;
-      }
-      @media (max-width: 600px) {
-        .streak-days-container {
-          grid-template-columns: repeat(4, 1fr);
-        }
-      }
-
-      .home-streak-card {
-        background: var(--glass);
-        border: 1px solid var(--glass-border);
-        border-radius: 10px;
-        padding: 6px 4px;
-        text-align: center;
-        font-size: 0.72rem;
-        opacity: 0.5;
-      }
-      .home-streak-card.claimed {
-        background: rgba(16, 185, 129, 0.2);
-        border-color: var(--success);
-        opacity: 1;
-        color: var(--success);
-        font-weight: bold;
-      }
-      .home-streak-card.active-ready {
-        background: rgba(250, 204, 21, 0.25);
-        border-color: var(--accent);
-        opacity: 1;
-        cursor: pointer;
-        animation: pulse 1.5s infinite;
-        color: var(--accent);
-        font-weight: bold;
-      }
-      .home-streak-card.locked {
-        opacity: 0.35;
-        color: #94a3b8;
-      }
-
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.04); }
-      }
-
-      .album-row {
-        display: flex;
-        gap: 10px;
-        width: 100%;
-        max-width: 1100px;
-        margin-bottom: 12px;
-      }
-      .album-card {
-        flex: 1;
-        background: linear-gradient(135deg, #ec4899, #8b5cf6);
-        border-radius: 16px;
-        padding: 10px 14px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        cursor: pointer;
-        transition: transform 0.2s;
-      }
-      .album-card.cert-bg {
-        background: linear-gradient(135deg, #3b82f6, #10b981);
-      }
-
-      .category-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-        gap: 10px;
-        width: 100%;
-        max-width: 1100px;
-        padding-bottom: 20px;
-      }
-      .cat-card {
-        background: rgba(15, 23, 42, 0.6);
-        border: 2px solid;
-        border-radius: 16px;
-        padding: 12px 8px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        cursor: pointer;
-        transition: transform 0.15s ease;
-      }
-      .cat-card:active {
-        transform: scale(0.96);
-      }
-
-      /* MODALS & OVERLAYS */
-      .modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.95);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 200;
-        padding: 15px;
-        transform: translateZ(0);
-        backface-visibility: hidden;
-      }
-      .modal-card {
-        background: #1e293b;
-        border: 2px solid var(--primary);
-        border-radius: 20px;
-        padding: 18px;
-        text-align: center;
-        max-width: 380px;
-        width: 92%;
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-      .sticker-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin: 12px 0;
-        max-height: 220px;
-        overflow-y: auto;
-      }
-      .sticker-item-card {
-        background: var(--glass);
-        border: 1px dashed var(--glass-border);
-        border-radius: 12px;
-        padding: 8px;
-      }
-      .sticker-item-card.unlocked {
-        border-style: solid;
-        border-color: var(--accent);
-        cursor: pointer;
-      }
-      .sticker-item-card:not(.unlocked) .sticker-item-icon {
-        filter: grayscale(1);
-        opacity: 0.3;
-      }
-
-      .certificate-card {
-        background: linear-gradient(135deg, #1e1b4b, #312e81);
-        border: 4px solid var(--accent);
-        border-radius: 24px;
-        padding: 20px 14px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      }
-
-      .star-rating {
-        font-size: 2.2rem;
-        margin: 6px 0;
-        animation: bounce 0.6s infinite alternate;
-      }
-
-      .epic-popup {
-        position: fixed;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%) translateZ(0);
-        background: rgba(15, 23, 42, 0.95);
-        border: 2px solid;
-        padding: 10px 20px;
-        border-radius: 30px;
-        font-weight: 900;
-        z-index: 160;
-        animation: pop 0.8s forwards;
-        font-size: 1.1rem;
-        pointer-events: none;
-      }
-      @keyframes pop {
-        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5) translateZ(0); }
-        50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) translateZ(0); }
-        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9) translateZ(0); }
-      }
-
-      /* TUTORIAL */
-      .tutorial-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.95);
-        z-index: 9000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-      }
-      .tutorial-card {
-        background: #1e293b;
-        border: 3px solid var(--accent);
-        border-radius: 24px;
-        padding: 20px;
-        text-align: center;
-        max-width: 360px;
-        width: 90%;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
-      }
-      .tutorial-step-icon {
-        font-size: 3.5rem;
-        margin-bottom: 10px;
-      }
-      .tutorial-title {
-        color: var(--accent);
-        font-size: 1.3rem;
-        font-weight: 900;
-        margin-bottom: 8px;
-      }
-      .tutorial-desc {
-        color: #cbd5e1;
-        font-size: 0.9rem;
-        line-height: 1.4;
-        margin-bottom: 18px;
-      }
-      .tutorial-btns {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-      }
-    </style>
+    <!-- Capacitor Native Bridge -->
+    <script src="capacitor.js"></script>
+    <link rel="stylesheet" href="./css/style.css" />
   </head>
   <body>
     <!-- SPLASH SCREEN -->
@@ -573,7 +35,10 @@
     <div class="hud">
       <div class="hud-left">
         <button class="btn-nav" onclick="openCategoryMenu()">⬅ Home</button>
-        <div style="font-weight: 800; color: var(--accent)" id="active-cat-title">
+        <div
+          style="font-weight: 800; color: var(--accent)"
+          id="active-cat-title"
+        >
           Numbers 🔢
         </div>
       </div>
@@ -595,7 +60,9 @@
     <!-- CATEGORY SCREEN -->
     <div id="category-screen">
       <div class="home-header">
-        <h2 style="color: var(--accent); font-size: 1.3rem;">🎮 Kids Game World</h2>
+        <h2 style="color: var(--accent); font-size: 1.3rem">
+          🎮 Kids Game World
+        </h2>
         <div class="hud-right">
           <div class="stat-box">⭐ <span id="home-star-count">0</span></div>
           <div class="stat-box">🪙 <span id="home-coin-count">0</span></div>
@@ -603,9 +70,19 @@
       </div>
 
       <div class="daily-streak-widget" id="tutor-streak-widget">
-        <div style="display: flex; justify-content: space-between; font-weight: 800; color: var(--accent); font-size: 0.85rem;">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            font-weight: 800;
+            color: var(--accent);
+            font-size: 0.85rem;
+          "
+        >
           <span>🎁 Daily Reward Streak</span>
-          <span style="font-size: 0.72rem; color: #94a3b8">Log in daily for gifts!</span>
+          <span style="font-size: 0.72rem; color: #94a3b8"
+            >Log in daily for gifts!</span
+          >
         </div>
         <div class="streak-days-container" id="home-streak-container"></div>
       </div>
@@ -616,17 +93,35 @@
             <div style="font-weight: 900; font-size: 0.95rem">📖 Stickers</div>
             <div style="font-size: 0.7rem; opacity: 0.9">Collect 11 items!</div>
           </div>
-          <button class="btn-nav" style="background: #fff; color: #ec4899; padding: 4px 10px; font-size: 0.75rem;">
+          <button
+            class="btn-nav"
+            style="
+              background: #fff;
+              color: #ec4899;
+              padding: 4px 10px;
+              font-size: 0.75rem;
+            "
+          >
             VIEW
           </button>
         </div>
 
         <div class="album-card cert-bg" onclick="openMyCertificatesModal()">
           <div>
-            <div style="font-weight: 900; font-size: 0.95rem">📜 Certificates</div>
+            <div style="font-weight: 900; font-size: 0.95rem">
+              📜 Certificates
+            </div>
             <div style="font-size: 0.7rem; opacity: 0.9">Earned awards!</div>
           </div>
-          <button class="btn-nav" style="background: #fff; color: #10b981; padding: 4px 10px; font-size: 0.75rem;">
+          <button
+            class="btn-nav"
+            style="
+              background: #fff;
+              color: #10b981;
+              padding: 4px 10px;
+              font-size: 0.75rem;
+            "
+          >
             VIEW
           </button>
         </div>
@@ -636,16 +131,31 @@
     </div>
 
     <!-- FIRST TIME TUTORIAL MODAL -->
-    <div class="tutorial-overlay" id="tutorial-modal" style="display: none;">
+    <div class="tutorial-overlay" id="tutorial-modal" style="display: none">
       <div class="tutorial-card">
         <div class="tutorial-step-icon" id="tutor-icon">👨‍👩‍👧‍👦</div>
-        <div class="tutorial-title" id="tutor-title">Welcome Parents & Kids!</div>
+        <div class="tutorial-title" id="tutor-title">
+          Welcome Parents & Kids!
+        </div>
         <div class="tutorial-desc" id="tutor-desc">
-          Is interactive guide se aap easily game ke features samajh sakte hain taake bachon ko seekhne mein madad mil sake!
+          Is interactive guide se aap easily game ke features samajh sakte hain
+          taake bachon ko seekhne mein madad mil sake!
         </div>
         <div class="tutorial-btns">
-          <button class="btn-nav" style="background: rgba(255,255,255,0.15);" onclick="skipTutorial()">Skip</button>
-          <button class="btn-nav" id="tutor-next-btn" onclick="nextTutorialStep()">Next ➔</button>
+          <button
+            class="btn-nav"
+            style="background: rgba(255, 255, 255, 0.15)"
+            onclick="skipTutorial()"
+          >
+            Skip
+          </button>
+          <button
+            class="btn-nav"
+            id="tutor-next-btn"
+            onclick="nextTutorialStep()"
+          >
+            Next ➔
+          </button>
         </div>
       </div>
     </div>
@@ -654,12 +164,31 @@
     <div class="modal-overlay" id="start-choice-modal">
       <div class="modal-card">
         <div style="font-size: 2.8rem">🎯</div>
-        <h3 style="color: var(--accent)" id="choice-title">Category Progress</h3>
-        <p style="color: #94a3b8; margin: 10px 0; font-size: 0.85rem;" id="choice-desc">You have existing progress here!</p>
-        <button class="btn-nav" style="width: 100%; padding: 10px; margin-bottom: 8px" id="btn-resume">
+        <h3 style="color: var(--accent)" id="choice-title">
+          Category Progress
+        </h3>
+        <p
+          style="color: #94a3b8; margin: 10px 0; font-size: 0.85rem"
+          id="choice-desc"
+        >
+          You have existing progress here!
+        </p>
+        <button
+          class="btn-nav"
+          style="width: 100%; padding: 10px; margin-bottom: 8px"
+          id="btn-resume"
+        >
           RESUME TO LEVEL X ➔
         </button>
-        <button class="btn-nav" style="width: 100%; padding: 8px; background: rgba(255, 255, 255, 0.1);" id="btn-restart">
+        <button
+          class="btn-nav"
+          style="
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+          "
+          id="btn-restart"
+        >
           RESTART TO LEVEL 1 🔄
         </button>
       </div>
@@ -669,7 +198,11 @@
       <div class="modal-card">
         <h3>📖 Sticker Collection (11)</h3>
         <div class="sticker-grid" id="sticker-grid"></div>
-        <button class="btn-nav" style="width: 100%; background: var(--glass)" onclick="closeModal('sticker-album-modal')">
+        <button
+          class="btn-nav"
+          style="width: 100%; background: var(--glass)"
+          onclick="closeModal('sticker-album-modal')"
+        >
           CLOSE
         </button>
       </div>
@@ -682,7 +215,11 @@
           Click any certificate to view it! 🎓
         </p>
         <div class="sticker-grid" id="certificates-grid"></div>
-        <button class="btn-nav" style="width: 100%; background: var(--glass)" onclick="closeModal('my-certificates-modal')">
+        <button
+          class="btn-nav"
+          style="width: 100%; background: var(--glass)"
+          onclick="closeModal('my-certificates-modal')"
+        >
           CLOSE
         </button>
       </div>
@@ -692,22 +229,55 @@
     <div class="modal-overlay" id="victory-modal">
       <div class="modal-card">
         <div class="star-rating">⭐⭐⭐</div>
-        <h2 style="color: var(--accent); font-weight: 900" id="reward-praise">Excellent!</h2>
-        <p style="margin: 6px 0; color: #cbd5e1; font-weight: 700; font-size: 1rem;" id="reward-star-msg">
+        <h2 style="color: var(--accent); font-weight: 900" id="reward-praise">
+          Excellent!
+        </h2>
+        <p
+          style="
+            margin: 6px 0;
+            color: #cbd5e1;
+            font-weight: 700;
+            font-size: 1rem;
+          "
+          id="reward-star-msg"
+        >
           You earned 3 Stars!
         </p>
 
-        <div style="background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; padding: 10px; margin: 10px 0;">
+        <div
+          style="
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 10px;
+            margin: 10px 0;
+          "
+        >
           <div style="font-size: 0.8rem; color: #94a3b8">Level Rewards:</div>
-          <div style="font-size: 0.95rem; font-weight: bold; color: var(--accent)" id="reward-rewards-list">
+          <div
+            style="font-size: 0.95rem; font-weight: bold; color: var(--accent)"
+            id="reward-rewards-list"
+          >
             🪙 +50 Coins | 🏆 Badge Earned!
           </div>
         </div>
 
-        <button class="btn-nav" style="width: 100%; padding: 10px; margin-bottom: 8px" id="modal-action-btn" onclick="nextLevelAction()">
+        <button
+          class="btn-nav"
+          style="width: 100%; padding: 10px; margin-bottom: 8px"
+          id="modal-action-btn"
+          onclick="nextLevelAction()"
+        >
           NEXT LEVEL ➔
         </button>
-        <button class="btn-nav" style="width: 100%; background: var(--glass)" onclick="closeModal('victory-modal'); openCategoryMenu();">
+        <button
+          class="btn-nav"
+          style="width: 100%; background: var(--glass)"
+          onclick="
+            closeModal('victory-modal');
+            openCategoryMenu();
+          "
+        >
           ⬅ Back to Menu
         </button>
       </div>
@@ -717,14 +287,38 @@
     <div class="modal-overlay" id="certificate-modal">
       <div class="modal-card certificate-card">
         <div style="font-size: 3rem">🎓</div>
-        <h2 style="color: var(--accent); font-weight: 900; font-size: 1.2rem">CERTIFICATE OF ACHIEVEMENT</h2>
-        <p style="color: #cbd5e1; font-size: 0.75rem; margin-top: 4px">PROUDLY PRESENTED TO OUR SUPER LEARNER</p>
-        <div style="font-size: 1.1rem; font-weight: 800; color: #38bdf8; margin: 10px 0;" id="cert-category-name">
+        <h2 style="color: var(--accent); font-weight: 900; font-size: 1.2rem">
+          CERTIFICATE OF ACHIEVEMENT
+        </h2>
+        <p style="color: #cbd5e1; font-size: 0.75rem; margin-top: 4px">
+          PROUDLY PRESENTED TO OUR SUPER LEARNER
+        </p>
+        <div
+          style="
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #38bdf8;
+            margin: 10px 0;
+          "
+          id="cert-category-name"
+        >
           Category Master
         </div>
-        <p style="color: #94a3b8; font-size: 0.75rem">For successfully completing all 10 Levels with perfection!</p>
+        <p style="color: #94a3b8; font-size: 0.75rem">
+          For successfully completing all 10 Levels with perfection!
+        </p>
         <div style="font-size: 1.8rem; margin: 8px 0">🥇🏆⭐</div>
-        <button class="btn-nav" style="width: 100%; background: var(--accent); color: #0f172a; font-weight: 900; padding: 10px;" onclick="claimCertificateAction();">
+        <button
+          class="btn-nav"
+          style="
+            width: 100%;
+            background: var(--accent);
+            color: #0f172a;
+            font-weight: 900;
+            padding: 10px;
+          "
+          onclick="claimCertificateAction()"
+        >
           CLAIM CERTIFICATE 📜
         </button>
       </div>
@@ -734,1092 +328,46 @@
     <div class="modal-overlay" id="certificate-detail-modal">
       <div class="modal-card certificate-card">
         <div style="font-size: 3rem">🎓</div>
-        <h2 style="color: var(--accent); font-weight: 900; font-size: 1.2rem">CERTIFICATE OF ACHIEVEMENT</h2>
-        <p style="color: #cbd5e1; font-size: 0.75rem; margin-top: 4px">PROUDLY PRESENTED TO OUR SUPER LEARNER</p>
-        <div style="font-size: 1.1rem; font-weight: 800; color: #38bdf8; margin: 10px 0;" id="cert-detail-name">
+        <h2 style="color: var(--accent); font-weight: 900; font-size: 1.2rem">
+          CERTIFICATE OF ACHIEVEMENT
+        </h2>
+        <p style="color: #cbd5e1; font-size: 0.75rem; margin-top: 4px">
+          PROUDLY PRESENTED TO OUR SUPER LEARNER
+        </p>
+        <div
+          style="
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #38bdf8;
+            margin: 10px 0;
+          "
+          id="cert-detail-name"
+        >
           Category Master
         </div>
-        <p style="color: #94a3b8; font-size: 0.75rem">For successfully completing all 10 Levels with perfection!</p>
+        <p style="color: #94a3b8; font-size: 0.75rem">
+          For successfully completing all 10 Levels with perfection!
+        </p>
         <div style="font-size: 1.8rem; margin: 8px 0">🥇🏆⭐</div>
-        <button class="btn-nav" style="width: 100%; background: var(--glass); color: #fff; font-weight: 900; padding: 10px;" onclick="closeModal('certificate-detail-modal'); openMyCertificatesModal();">
+        <button
+          class="btn-nav"
+          style="
+            width: 100%;
+            background: var(--glass);
+            color: #fff;
+            font-weight: 900;
+            padding: 10px;
+          "
+          onclick="
+            closeModal('certificate-detail-modal');
+            openMyCertificatesModal();
+          "
+        >
           ⬅ BACK TO CERTIFICATES
         </button>
       </div>
     </div>
 
-    <script>
-      /* SECURITY PROTOCOLS */
-      (function applySecurityProtocols() {
-        document.addEventListener("contextmenu", (e) => e.preventDefault());
-        document.addEventListener("keydown", (e) => {
-          if (
-            e.keyCode === 123 ||
-            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) ||
-            (e.ctrlKey && e.keyCode === 85)
-          ) {
-            e.preventDefault();
-            return false;
-          }
-        });
-      })();
-
-      /* MAIN APP SETUP */
-      window.onload = () => {
-        try {
-          evaluateStreakOnLaunch();
-          renderCategoryGrid();
-          renderHomeStreakWidget();
-          updateHUD();
-          initAdMob();
-
-          setTimeout(() => {
-            const splash = document.getElementById("splash-screen");
-            if (splash) {
-              splash.style.opacity = "0";
-              setTimeout(() => {
-                splash.style.display = "none";
-                checkFirstTimeTutorial();
-              }, 600);
-            }
-          }, 2000);
-        } catch(e) {
-          console.error("Initialization Error:", e);
-        }
-      };
-
-      /* TUTORIAL ONBOARDING ENGINE */
-      let currentTutorStep = 0;
-      const tutorialSteps = [
-        {
-          icon: "👨‍👩‍👧‍👦",
-          title: "Welcome Parents & Kids!",
-          desc: "MatchyKids mein hushamdeed! Yeh 1-minute guide aapko game play aur rewards samajhne mein madad karegi."
-        },
-        {
-          icon: "🎁",
-          title: "Daily Reward Streak",
-          desc: "Rozana game open karne par Daily Reward milta hai. Continuous 7 days login karne par special Gifts aur Coins milte hain!"
-        },
-        {
-          icon: "📖",
-          title: "Stickers & 📜 Certificates",
-          desc: "Levels complete karne par 11 Stickers aur har Category finish karne par Official Achievement Certificate milta hai."
-        },
-        {
-          icon: "🎯",
-          title: "How to Play (Matching)",
-          desc: "Bache screen par float ho rahe item par tap karenge aur phir sahi matching Basket par tap karke match complete karenge!"
-        }
-      ];
-
-      function checkFirstTimeTutorial() {
-        try {
-          const isCompleted = localStorage.getItem("kids_tutorial_completed");
-          if (!isCompleted) {
-            showTutorialStep(0);
-          }
-        } catch(e){}
-      }
-
-      function showTutorialStep(stepIdx) {
-        currentTutorStep = stepIdx;
-        const data = tutorialSteps[stepIdx];
-        const iconEl = document.getElementById("tutor-icon");
-        const titleEl = document.getElementById("tutor-title");
-        const descEl = document.getElementById("tutor-desc");
-        
-        if (iconEl) iconEl.innerText = data.icon;
-        if (titleEl) titleEl.innerText = data.title;
-        if (descEl) descEl.innerText = data.desc;
-        
-        const nextBtn = document.getElementById("tutor-next-btn");
-        if (nextBtn) {
-          nextBtn.innerText = (stepIdx === tutorialSteps.length - 1) ? "START GAME 🚀" : "Next ➔";
-        }
-        const modal = document.getElementById("tutorial-modal");
-        if (modal) modal.style.display = "flex";
-      }
-
-      function nextTutorialStep() {
-        if (currentTutorStep < tutorialSteps.length - 1) {
-          showTutorialStep(currentTutorStep + 1);
-        } else {
-          skipTutorial();
-        }
-      }
-
-      function skipTutorial() {
-        const modal = document.getElementById("tutorial-modal");
-        if (modal) modal.style.display = "none";
-        try {
-          localStorage.setItem("kids_tutorial_completed", "true");
-        } catch(e){}
-      }
-
-      /* NON-BLOCKING ASYNC SPEECH FUNCTIONALITY */
-      function speakText(text) {
-        if (!text) return;
-        setTimeout(async () => {
-          try {
-            if (window.Capacitor?.Plugins?.TextToSpeech) {
-              await window.Capacitor.Plugins.TextToSpeech.speak({
-                text: String(text),
-                lang: "en-US",
-                rate: 1.0,
-              });
-            } else if ("speechSynthesis" in window) {
-              window.speechSynthesis.cancel();
-              const utt = new SpeechSynthesisUtterance(String(text));
-              utt.rate = 0.9;
-              window.speechSynthesis.speak(utt);
-            }
-          } catch (e) {}
-        }, 10);
-      }
-
-      /* AUDIO CONTEXT COMPATIBILITY */
-      let audioCtx = null;
-      function getAudioContext() {
-        if (!audioCtx) {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (AudioContextClass) {
-            audioCtx = new AudioContextClass();
-          }
-        }
-        if (audioCtx && audioCtx.state === "suspended") {
-          audioCtx.resume().catch(()=>{});
-        }
-        return audioCtx;
-      }
-
-      function playTone(freq, type = "sine", duration = 0.15) {
-        try {
-          const ctx = getAudioContext();
-          if (!ctx) return;
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = type;
-          osc.frequency.setValueAtTime(freq, ctx.currentTime);
-          gain.gain.setValueAtTime(0.1, ctx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          osc.stop(ctx.currentTime + duration);
-        } catch (e) {}
-      }
-
-      const playSuccessSound = () => {
-        playTone(523);
-        setTimeout(() => playTone(659), 100);
-      };
-      const playErrorSound = () => {
-        playTone(220, "sawtooth");
-        setTimeout(() => playTone(180, "sawtooth"), 100);
-      };
-      const playWinSound = () =>
-        [400, 500, 600, 800].forEach((n, i) =>
-          setTimeout(() => playTone(n, "triangle"), i * 100)
-        );
-
-      function playStreakCelebrationSound() {
-        [523.25, 659.25, 783.99, 1046.5, 1318.51].forEach((freq, idx) => {
-          setTimeout(() => playTone(freq, "triangle", 0.25), idx * 80);
-        });
-      }
-
-      /* SAFE CONFETTI ENGINE (Non-Blocking) */
-      function fireConfetti(opts) {
-        try {
-          if (typeof window.confetti === "function") {
-            window.confetti(opts);
-          }
-        } catch (e) {}
-      }
-
-      function createEpicPopup(text, color) {
-        try {
-          const pop = document.createElement("div");
-          pop.className = "epic-popup";
-          pop.innerText = text;
-          pop.style.borderColor = color;
-          pop.style.color = color;
-          document.body.appendChild(pop);
-          setTimeout(() => pop.remove(), 800);
-        } catch(e){}
-      }
-
-      /* 11 STICKERS */
-      const ALL_STICKERS = [
-        { id: "s_streak_teddy", name: "Teddy Bear", icon: "🧸", categoryId: null },
-        { id: "s_cat_fruits", name: "Fruit Champ", icon: "🍎", categoryId: "fruits" },
-        { id: "s_cat_veggies", name: "Veggie Hero", icon: "🥦", categoryId: "veggies" },
-        { id: "s_cat_colors", name: "Color Star", icon: "🎨", categoryId: "colors" },
-        { id: "s_cat_abc", name: "ABC Master", icon: "🔤", categoryId: "abc" },
-        { id: "s_cat_counting", name: "Math Wizard", icon: "🔢", categoryId: "counting" },
-        { id: "s_cat_toys", name: "Toy King", icon: "🚗", categoryId: "toys" },
-        { id: "s_cat_body", name: "Body Expert", icon: "🖐️", categoryId: "body" },
-        { id: "s_cat_animals", name: "Safari Pro", icon: "🐶", categoryId: "animals" },
-        { id: "s_cat_shapes", name: "Shape Genius", icon: "📐", categoryId: "shapes" },
-        { id: "s_cat_iq_mix", name: "IQ Master", icon: "🧠", categoryId: "iq_mix" },
-      ];
-
-      const DAILY_STREAK = [
-        { day: 1, icon: "🪙", title: "+10 Coins", type: "coins", val: 10 },
-        { day: 2, icon: "⭐", title: "+5 Stars", type: "stars", val: 5 },
-        { day: 3, icon: "🧸", title: "Teddy", type: "sticker", stickerId: "s_streak_teddy" },
-        { day: 4, icon: "🪙", title: "+25 Coins", type: "coins", val: 25 },
-        { day: 5, icon: "⭐", title: "+10 Stars", type: "stars", val: 10 },
-        { day: 6, icon: "⭐", title: "+15 Stars", type: "stars", val: 15 },
-        { day: 7, icon: "🎁", title: "Chest!", type: "chest", coins: 100, stars: 20 },
-      ];
-
-      const poolFruits = [
-        { type: "apple", icon: "🍎", name: "Apple", speak: "Apple", color: "#ef4444" },
-        { type: "banana", icon: "🍌", name: "Banana", speak: "Banana", color: "#facc15" },
-        { type: "grapes", icon: "🍇", name: "Grapes", speak: "Grapes", color: "#a855f7" },
-        { type: "carrot", icon: "🥕", name: "Carrot", speak: "Carrot", color: "#f97316" },
-        { type: "broccoli", icon: "🥦", name: "Broccoli", speak: "Broccoli", color: "#10b981" },
-        { type: "strawberry", icon: "🍓", name: "Strawberry", speak: "Strawberry", color: "#ef4444" },
-        { type: "orange", icon: "🍊", name: "Orange", speak: "Orange", color: "#f97316" },
-      ];
-
-      const categoriesData = [
-        {
-          id: "fruits",
-          name: "Fruits",
-          icon: "🍎",
-          color: "#ef4444",
-          levels: [
-            { level: 1, name: "Fresh Fruits", target: 5, items: [{ type: "apple", icon: "🍎", name: "Apple", color: "#ef4444" }, { type: "orange", icon: "🍊", name: "Orange", color: "#f97316" }, { type: "banana", icon: "🍌", name: "Banana", color: "#eab308" }] },
-            { level: 2, name: "Berry Delight", target: 6, items: [{ type: "strawberry", icon: "🍓", name: "Strawberry", color: "#f43f5e" }, { type: "grapes", icon: "🍇", name: "Grapes", color: "#a855f7" }, { type: "watermelon", icon: "🍉", name: "Watermelon", color: "#22c55e" }] },
-            { level: 3, name: "Tropical Fruits", target: 6, items: [{ type: "mango", icon: "🥭", name: "Mango", color: "#fbbf24" }, { type: "pineapple", icon: "🍍", name: "Pineapple", color: "#eab308" }, { type: "avocado", icon: "🥑", name: "Avocado", color: "#84cc16" }] },
-            { level: 4, name: "Citrus Orchard", target: 7, items: [{ type: "lemon", icon: "🍋", name: "Lemon", color: "#facc15" }, { type: "peach", icon: "🍑", name: "Peach", color: "#fb923c" }, { type: "cherry", icon: "🍒", name: "Cherry", color: "#dc2626" }] },
-            { level: 5, name: "Super Green", target: 7, items: [{ type: "kiwi", icon: "🥝", name: "Kiwi", color: "#65a30d" }, { type: "pear", icon: "🍐", name: "Pear", color: "#84cc16" }, { type: "apple", icon: "🍎", name: "Apple", color: "#b91c1c" }] },
-            { level: 6, name: "Melon Fun", target: 8, items: [{ type: "cantaloupe", icon: "🍈", name: "Melon", color: "#f59e0b" }, { type: "coconut", icon: "🥥", name: "Coconut", color: "#78350f" }, { type: "blueberry", icon: "🫐", name: "Blueberry", color: "#3b82f6" }] },
-            { level: 7, name: "Tangy Flavors", target: 8, items: [{ type: "grapefruit", icon: "🍊", name: "Grapefruit", color: "#f43f5e" }, { type: "lemon", icon: "🍋", name: "Lemon", color: "#a3e635" }, { type: "plum", icon: "🍑", name: "Plum", color: "#86198f" }] },
-            { level: 8, name: "Sweet Treats", target: 9, items: [{ type: "blueberry", icon: "🫐", name: "Blueberry", color: "#3b82f6" }, { type: "date", icon: "🌴", name: "Date", color: "#b45309" }, { type: "plum", icon: "🍑", name: "Plum", color: "#86198f" }] },
-            { level: 9, name: "Jungle Blast", target: 9, items: [{ type: "guava", icon: "🍏", name: "Guava", color: "#4ade80" }, { type: "dragonfruit", icon: "🌵", name: "Dragon Fruit", color: "#ec4899" }, { type: "mango", icon: "🥭", name: "Mango", color: "#f97316" }] },
-            { level: 10, name: "Fruit Master", target: 10, items: [{ type: "starfruit", icon: "⭐", name: "Starfruit", color: "#eab308" }, { type: "passion", icon: "🟣", name: "Passion Fruit", color: "#7c3aed" }, { type: "grapes", icon: "🍇", name: "Grapes", color: "#4c1d95" }] },
-          ],
-        },
-        {
-          id: "veggies",
-          name: "Vegetables",
-          icon: "🥦",
-          color: "#22c55e",
-          levels: [
-            { level: 1, name: "Garden Fresh", target: 5, items: [{ type: "carrot", icon: "🥕", name: "Carrot", color: "#f97316" }, { type: "broccoli", icon: "🥦", name: "Broccoli", color: "#22c55e" }, { type: "tomato", icon: "🍅", name: "Tomato", color: "#ef4444" }] },
-            { level: 2, name: "Veggie Crunch", target: 6, items: [{ type: "corn", icon: "🌽", name: "Corn", color: "#eab308" }, { type: "cucumber", icon: "🥒", name: "Cucumber", color: "#16a34a" }, { type: "eggplant", icon: "🍆", name: "Eggplant", color: "#a855f7" }] },
-            { level: 3, name: "Root Veggies", target: 6, items: [{ type: "potato", icon: "🥔", name: "Potato", color: "#ca8a04" }, { type: "onion", icon: "🧅", name: "Onion", color: "#f97316" }, { type: "garlic", icon: "🧄", name: "Garlic", color: "#e2e8f0" }] },
-            { level: 4, name: "Peppers & Leaf", target: 7, items: [{ type: "pepper", icon: "🫑", name: "Capsicum", color: "#16a34a" }, { type: "chili", icon: "🌶️", name: "Chili", color: "#dc2626" }, { type: "salad", icon: "🥗", name: "Lettuce", color: "#4ade80" }] },
-            { level: 5, name: "Super Greens", target: 7, items: [{ type: "pea", icon: "🫛", name: "Pea", color: "#65a30d" }, { type: "avocado_v", icon: "🥑", name: "Avocado", color: "#84cc16" }, { type: "mushroom", icon: "🍄", name: "Mushroom", color: "#f43f5e" }] },
-            { level: 6, name: "Healthy Roots", target: 8, items: [{ type: "beetroot", icon: "🍠", name: "Sweet Potato", color: "#b91c1c" }, { type: "carrot", icon: "🥕", name: "Carrot", color: "#f97316" }, { type: "cabbage", icon: "🥬", name: "Cabbage", color: "#22c55e" }] },
-            { level: 7, name: "Harvest Time", target: 8, items: [{ type: "pumpkin", icon: "🎃", name: "Pumpkin", color: "#ea580c" }, { type: "cucumber", icon: "🥒", name: "Cucumber", color: "#15803d" }, { type: "spinach", icon: "🥬", name: "Spinach", color: "#166534" }] },
-            { level: 8, name: "Veggie Feast", target: 9, items: [{ type: "cauliflower", icon: "🥦", name: "Cauliflower", color: "#f8fafc" }, { type: "onion", icon: "🧅", name: "Onion", color: "#a855f7" }, { type: "ginger_v", icon: "🫚", name: "Ginger", color: "#ca8a04" }] },
-            { level: 9, name: "Green Energy", target: 9, items: [{ type: "cabbage", icon: "🥬", name: "Cabbage", color: "#4ade80" }, { type: "asparagus", icon: "🫛", name: "Asparagus", color: "#15803d" }, { type: "corn_c", icon: "🌽", name: "Sweetcorn", color: "#facc15" }] },
-            { level: 10, name: "Master Chef", target: 10, items: [{ type: "olive", icon: "🫒", name: "Olive", color: "#65a30d" }, { type: "bean", icon: "🫘", name: "Beans", color: "#7f1d1d" }, { type: "bellpepper", icon: "🫑", name: "Bell Pepper", color: "#f97316" }] },
-          ],
-        },
-        {
-          id: "colors",
-          name: "Colors",
-          icon: "🎨",
-          color: "#ec4899",
-          levels: [
-            { level: 1, name: "Primary Colors", target: 5, items: [{ type: "red", icon: "🔴", name: "Red", color: "#ef4444" }, { type: "blue", icon: "🔵", name: "Blue", color: "#3b82f6" }, { type: "yellow", icon: "🟡", name: "Yellow", color: "#eab308" }] },
-            { level: 2, name: "Bright Colors", target: 6, items: [{ type: "green", icon: "🟢", name: "Green", color: "#22c55e" }, { type: "orange_c", icon: "🟠", name: "Orange", color: "#f97316" }, { type: "purple", icon: "🟣", name: "Purple", color: "#a855f7" }] },
-            { level: 3, name: "Soft Colors", target: 6, items: [{ type: "pink", icon: "🩷", name: "Pink", color: "#ec4899" }, { type: "brown", icon: "🟤", name: "Brown", color: "#78350f" }, { type: "black", icon: "⚫", name: "Black", color: "#1e293b" }] },
-            { level: 4, name: "Shine & Light", target: 7, items: [{ type: "white", icon: "⚪", name: "White", color: "#f8fafc" }, { type: "cyan", icon: "🩵", name: "Cyan", color: "#06b6d4" }, { type: "gold", icon: "⭐", name: "Gold", color: "#fbbf24" }] },
-            { level: 5, name: "Rainbow Fun", target: 7, items: [{ type: "violet", icon: "🟣", name: "Violet", color: "#8b5cf6" }, { type: "lime_c", icon: "🟢", name: "Lime", color: "#84cc16" }, { type: "maroon", icon: "🔴", name: "Maroon", color: "#881337" }] },
-            { level: 6, name: "Color Splash", target: 8, items: [{ type: "grey", icon: "🔘", name: "Grey", color: "#64748b" }, { type: "magenta", icon: "🩷", name: "Magenta", color: "#d946ef" }, { type: "teal", icon: "🔵", name: "Teal", color: "#0d9488" }] },
-            { level: 7, name: "Deep Shades", target: 8, items: [{ type: "navy", icon: "🔵", name: "Navy", color: "#1e3a8a" }, { type: "olive_c", icon: "🟢", name: "Olive", color: "#4d7c0f" }, { type: "peach_c", icon: "🟠", name: "Peach", color: "#fdba74" }] },
-            { level: 8, name: "Pastel Wonders", target: 9, items: [{ type: "lavender", icon: "🟣", name: "Lavender", color: "#c084fc" }, { type: "mint", icon: "🟢", name: "Mint", color: "#6ee7b7" }, { type: "coral", icon: "🔴", name: "Coral", color: "#fb7185" }] },
-            { level: 9, name: "Neon Glow", target: 9, items: [{ type: "neon_green", icon: "🟢", name: "Neon Green", color: "#4ade80" }, { type: "neon_yellow", icon: "🟡", name: "Neon Yellow", color: "#fef08a" }, { type: "neon_pink", icon: "🩷", name: "Neon Pink", color: "#f472b6" }] },
-            { level: 10, name: "Color Master", target: 10, items: [{ type: "silver", icon: "⚪", name: "Silver", color: "#cbd5e1" }, { type: "bronze", icon: "🟤", name: "Bronze", color: "#92400e" }, { type: "rainbow", icon: "🌈", name: "Rainbow", color: "#38bdf8" }] },
-          ],
-        },
-        {
-          id: "abc",
-          name: "ABC Alphabet",
-          icon: "🔤",
-          color: "#38bdf8",
-          levels: [
-            { level: 1, name: "Letters A B C", target: 5, items: [{ type: "la", icon: "A", name: "A", color: "#ef4444", isText: true }, { type: "lb", icon: "B", name: "B", color: "#3b82f6", isText: true }, { type: "lc", icon: "C", name: "C", color: "#eab308", isText: true }] },
-            { level: 2, name: "Letters D E F", target: 6, items: [{ type: "ld", icon: "D", name: "D", color: "#22c55e", isText: true }, { type: "le", icon: "E", name: "E", color: "#a855f7", isText: true }, { type: "lf", icon: "F", name: "F", color: "#f97316", isText: true }] },
-            { level: 3, name: "Letters G H I", target: 6, items: [{ type: "lg", icon: "G", name: "G", color: "#ec4899", isText: true }, { type: "lh", icon: "H", name: "H", color: "#06b6d4", isText: true }, { type: "li", icon: "I", name: "I", color: "#84cc16", isText: true }] },
-            { level: 4, name: "Letters J K L", target: 7, items: [{ type: "lj", icon: "J", name: "J", color: "#f59e0b", isText: true }, { type: "lk", icon: "K", name: "K", color: "#ef4444", isText: true }, { type: "ll", icon: "L", name: "L", color: "#3b82f6", isText: true }] },
-            { level: 5, name: "Letters M N O", target: 7, items: [{ type: "lm", icon: "M", name: "M", color: "#10b981", isText: true }, { type: "ln", icon: "N", name: "N", color: "#8b5cf6", isText: true }, { type: "lo", icon: "O", name: "O", color: "#f97316", isText: true }] },
-            { level: 6, name: "Letters P Q R", target: 8, items: [{ type: "lp", icon: "P", name: "P", color: "#ec4899", isText: true }, { type: "lq", icon: "Q", name: "Q", color: "#06b6d4", isText: true }, { type: "lr", icon: "R", name: "R", color: "#eab308", isText: true }] },
-            { level: 7, name: "Letters S T U", target: 8, items: [{ type: "ls", icon: "S", name: "S", color: "#22c55e", isText: true }, { type: "lt", icon: "T", name: "T", color: "#ef4444", isText: true }, { type: "lu", icon: "U", name: "U", color: "#a855f7", isText: true }] },
-            { level: 8, name: "Letters V W X", target: 9, items: [{ type: "lv", icon: "V", name: "V", color: "#f97316", isText: true }, { type: "lw", icon: "W", name: "W", color: "#3b82f6", isText: true }, { type: "lx", icon: "X", name: "X", color: "#10b981", isText: true }] },
-            { level: 9, name: "Letters Y Z Star", target: 9, items: [{ type: "ly", icon: "Y", name: "Y", color: "#eab308", isText: true }, { type: "lz", icon: "Z", name: "Z", color: "#ec4899", isText: true }, { type: "la_star", icon: "⭐", name: "Star", color: "#fbbf24" }] },
-            { level: 10, name: "ABC Master Level", target: 10, items: [{ type: "lx_m", icon: "X", name: "X", color: "#10b981", isText: true }, { type: "ly_m", icon: "Y", name: "Y", color: "#eab308", isText: true }, { type: "lz_m", icon: "Z", name: "Z", color: "#ec4899", isText: true }] },
-          ],
-        },
-        {
-          id: "counting",
-          name: "Counting (1 to 30)",
-          icon: "🔢",
-          color: "#f59e0b",
-          levels: [
-            { level: 1, name: "Numbers 1, 2, 3", target: 5, items: [{ type: "n1", icon: "1", name: "One", color: "#ef4444", isText: true }, { type: "n2", icon: "2", name: "Two", color: "#3b82f6", isText: true }, { type: "n3", icon: "3", name: "Three", color: "#22c55e", isText: true }] },
-            { level: 2, name: "Numbers 4, 5, 6", target: 6, items: [{ type: "n4", icon: "4", name: "Four", color: "#eab308", isText: true }, { type: "n5", icon: "5", name: "Five", color: "#a855f7", isText: true }, { type: "n6", icon: "6", name: "Six", color: "#f97316", isText: true }] },
-            { level: 3, name: "Numbers 7, 8, 9", target: 6, items: [{ type: "n7", icon: "7", name: "Seven", color: "#ec4899", isText: true }, { type: "n8", icon: "8", name: "Eight", color: "#06b6d4", isText: true }, { type: "n9", icon: "9", name: "Nine", color: "#84cc16", isText: true }] },
-            { level: 4, name: "Numbers 10, 11, 12", target: 7, items: [{ type: "n10", icon: "10", name: "Ten", color: "#f59e0b", isText: true }, { type: "n11", icon: "11", name: "Eleven", color: "#ef4444", isText: true }, { type: "n12", icon: "12", name: "Twelve", color: "#3b82f6", isText: true }] },
-            { level: 5, name: "Numbers 13, 14, 15", target: 7, items: [{ type: "n13", icon: "13", name: "Thirteen", color: "#10b981", isText: true }, { type: "n14", icon: "14", name: "Fourteen", color: "#8b5cf6", isText: true }, { type: "n15", icon: "15", name: "Fifteen", color: "#f97316", isText: true }] },
-            { level: 6, name: "Numbers 16, 17, 18", target: 8, items: [{ type: "n16", icon: "16", name: "Sixteen", color: "#ec4899", isText: true }, { type: "n17", icon: "17", name: "Seventeen", color: "#06b6d4", isText: true }, { type: "n18", icon: "18", name: "Eighteen", color: "#eab308", isText: true }] },
-            { level: 7, name: "Numbers 19, 20, 21", target: 8, items: [{ type: "n19", icon: "19", name: "Nineteen", color: "#22c55e", isText: true }, { type: "n20", icon: "20", name: "Twenty", color: "#ef4444", isText: true }, { type: "n21", icon: "21", name: "Twenty One", color: "#a855f7", isText: true }] },
-            { level: 8, name: "Numbers 22, 23, 24", target: 9, items: [{ type: "n22", icon: "22", name: "Twenty Two", color: "#f97316", isText: true }, { type: "n23", icon: "23", name: "Twenty Three", color: "#3b82f6", isText: true }, { type: "n24", icon: "24", name: "Twenty Four", color: "#10b981", isText: true }] },
-            { level: 9, name: "Numbers 25, 26, 27", target: 9, items: [{ type: "n25", icon: "25", name: "Twenty Five", color: "#eab308", isText: true }, { type: "n26", icon: "26", name: "Twenty Six", color: "#ec4899", isText: true }, { type: "n27", icon: "27", name: "Twenty Seven", color: "#06b6d4", isText: true }] },
-            { level: 10, name: "Numbers 28, 29, 30", target: 10, items: [{ type: "n28", icon: "28", name: "Twenty Eight", color: "#84cc16", isText: true }, { type: "n29", icon: "29", name: "Twenty Nine", color: "#f59e0b", isText: true }, { type: "n30", icon: "30", name: "Thirty", color: "#ef4444", isText: true }] },
-          ],
-        },
-        {
-          id: "toys",
-          name: "Cars & Toys",
-          icon: "🚗",
-          color: "#a855f7",
-          levels: [
-            { level: 1, name: "City Vehicles", target: 5, items: [{ type: "car", icon: "🚗", name: "Car", color: "#ef4444" }, { type: "truck", icon: "🚚", name: "Truck", color: "#3b82f6" }, { type: "bus", icon: "🚌", name: "Bus", color: "#eab308" }] },
-            { level: 2, name: "Emergency Fleet", target: 6, items: [{ type: "police", icon: "🚓", name: "Police Car", color: "#3b82f6" }, { type: "fire", icon: "🚒", name: "Fire Truck", color: "#ef4444" }, { type: "ambulance", icon: "🚑", name: "Ambulance", color: "#f8fafc" }] },
-            { level: 3, name: "Action Toys", target: 6, items: [{ type: "robot", icon: "🤖", name: "Robot", color: "#06b6d4" }, { type: "rocket", icon: "🚀", name: "Rocket", color: "#a855f7" }, { type: "train", icon: "🚂", name: "Train", color: "#22c55e" }] },
-            { level: 4, name: "Race & Speed", target: 7, items: [{ type: "racecar", icon: "🏎️", name: "Race Car", color: "#dc2626" }, { type: "bike", icon: "🏍️", name: "Motorbike", color: "#f97316" }, { type: "scooter", icon: "🛵", name: "Scooter", color: "#10b981" }] },
-            { level: 5, name: "Heavy Machinery", target: 7, items: [{ type: "tractor", icon: "🚜", name: "Tractor", color: "#65a30d" }, { type: "construction", icon: "🏗️", name: "Crane", color: "#ca8a04" }, { type: "taxi", icon: "🚕", name: "Taxi", color: "#facc15" }] },
-            { level: 6, name: "Fun Playtime", target: 8, items: [{ type: "teddy", icon: "🧸", name: "Teddy Bear", color: "#b45309" }, { type: "ball", icon: "⚽", name: "Ball", color: "#e2e8f0" }, { type: "blocks", icon: "🧱", name: "Blocks", color: "#ec4899" }] },
-            { level: 7, name: "Sky & Sea", target: 8, items: [{ type: "plane", icon: "✈️", name: "Airplane", color: "#0284c7" }, { type: "helicopter", icon: "🚁", name: "Helicopter", color: "#ca8a04" }, { type: "boat", icon: "⛵", name: "Boat", color: "#38bdf8" }] },
-            { level: 8, name: "Cool Vehicles", target: 9, items: [{ type: "monster_truck", icon: "🛻", name: "Pickup Truck", color: "#475569" }, { type: "cablecar", icon: "𚡡", name: "Cable Car", color: "#7c3aed" }, { type: "tram", icon: "🚋", name: "Tram", color: "#059669" }] },
-            { level: 9, name: "Super Toys", target: 9, items: [{ type: "ufo", icon: "🛸", name: "UFO", color: "#c084fc" }, { type: "yo_yo", icon: "🪀", name: "Yo Yo", color: "#ef4444" }, { type: "kite", icon: "🪁", name: "Kite", color: "#f43f5e" }] },
-            { level: 10, name: "Ultimate Toybox", target: 10, items: [{ type: "monster_rc", icon: "🚙", name: "Monster Car", color: "#16a34a" }, { type: "drone", icon: "🚁", name: "Drone", color: "#0284c7" }, { type: "crown_toy", icon: "👑", name: "Crown", color: "#fbbf24" }] },
-          ],
-        },
-        {
-          id: "body",
-          name: "Parts of Body",
-          icon: "🖐️",
-          color: "#10b981",
-          levels: [
-            { level: 1, name: "Face & Head", target: 5, items: [{ type: "eye", icon: "👁️", name: "Eye", color: "#3b82f6" }, { type: "ear", icon: "👂", name: "Ear", color: "#f97316" }, { type: "nose", icon: "👃", name: "Nose", color: "#ef4444" }] },
-            { level: 2, name: "Hands & Feet", target: 6, items: [{ type: "hand", icon: "🖐️", name: "Hand", color: "#eab308" }, { type: "foot", icon: "🦶", name: "Foot", color: "#22c55e" }, { type: "arm", icon: "🦾", name: "Arm", color: "#a855f7" }] },
-            { level: 3, name: "Smile & Voice", target: 6, items: [{ type: "mouth", icon: "👄", name: "Mouth", color: "#f43f5e" }, { type: "tooth", icon: "🦷", name: "Tooth", color: "#f8fafc" }, { type: "tongue", icon: "👅", name: "Tongue", color: "#ec4899" }] },
-            { level: 4, name: "Upper Body", target: 7, items: [{ type: "brain", icon: "🧠", name: "Brain", color: "#f472b6" }, { type: "heart", icon: "🫀", name: "Heart", color: "#dc2626" }, { type: "bone", icon: "🦴", name: "Bone", color: "#e2e8f0" }] },
-            { level: 5, name: "Sensory Parts", target: 7, items: [{ type: "hair", icon: "💇", name: "Hair", color: "#475569" }, { type: "muscle", icon: "🏋️", name: "Muscle", color: "#ea580c" }, { type: "face", icon: "😀", name: "Face", color: "#fbbf24" }] },
-            { level: 6, name: "Body Actions", target: 8, items: [{ type: "leg", icon: "🦵", name: "Leg", color: "#16a34a" }, { type: "thumb", icon: "👍", name: "Thumb", color: "#eab308" }, { type: "fist", icon: "✊", name: "Fist", color: "#b45309" }] },
-            { level: 7, name: "Expressions", target: 8, items: [{ type: "wink", icon: "😜", name: "Wink Eye", color: "#f59e0b" }, { type: "clap", icon: "👏", name: "Clapping Hands", color: "#eab308" }, { type: "wave", icon: "👋", name: "Waving Hand", color: "#38bdf8" }] },
-            { level: 8, name: "Movement Parts", target: 9, items: [{ type: "run_leg", icon: "🏃", name: "Running Legs", color: "#22c55e" }, { type: "punch", icon: "👊", name: "Punch Hand", color: "#ef4444" }, { type: "point", icon: "👉", name: "Finger Point", color: "#f97316" }] },
-            { level: 9, name: "Senses Master", target: 9, items: [{ type: "look_eye", icon: "👀", name: "Looking Eyes", color: "#06b6d4" }, { type: "hear_ear", icon: "🎧", name: "Hearing Ear", color: "#a855f7" }, { type: "kiss_lip", icon: "💋", name: "Lips", color: "#f43f5e" }] },
-            { level: 10, name: "Body Champion", target: 10, items: [{ type: "full_body", icon: "🧍", name: "Full Body", color: "#4ade80" }, { type: "mind", icon: "🧩", name: "Clever Mind", color: "#38bdf8" }, { type: "fist_bump", icon: "🤛", name: "Fist Bump", color: "#fbbf24" }] },
-          ],
-        },
-        {
-          id: "animals",
-          name: "Animals & Birds",
-          icon: "🐶",
-          color: "#f43f5e",
-          levels: [
-            { level: 1, name: "Cute Pets", target: 5, items: [{ type: "dog", icon: "🐶", name: "Dog", color: "#f97316" }, { type: "cat", icon: "🐱", name: "Cat", color: "#eab308" }, { type: "rabbit", icon: "🐰", name: "Rabbit", color: "#f8fafc" }] },
-            { level: 2, name: "Jungle Animals", target: 6, items: [{ type: "lion", icon: "🦁", name: "Lion", color: "#f59e0b" }, { type: "tiger", icon: "🐯", name: "Tiger", color: "#ea580c" }, { type: "monkey", icon: "🐒", name: "Monkey", color: "#78350f" }] },
-            { level: 3, name: "Farm Friends", target: 6, items: [{ type: "cow", icon: "🐮", name: "Cow", color: "#1e293b" }, { type: "horse", icon: "🐴", name: "Horse", color: "#b45309" }, { type: "sheep", icon: "🐑", name: "Sheep", color: "#e2e8f0" }] },
-            { level: 4, name: "Birds Kingdom", target: 7, items: [{ type: "parrot", icon: "🦜", name: "Parrot", color: "#22c55e" }, { type: "duck", icon: "🦆", name: "Duck", color: "#0284c7" }, { type: "owl", icon: "🦉", name: "Owl", color: "#7c3aed" }] },
-            { level: 5, name: "Sea Life", target: 7, items: [{ type: "fish", icon: "🐟", name: "Fish", color: "#38bdf8" }, { type: "dolphin", icon: "🐬", name: "Dolphin", color: "#0284c7" }, { type: "octopus", icon: "🐙", name: "Octopus", color: "#ec4899" }] },
-            { level: 6, name: "Forest Safari", target: 8, items: [{ type: "elephant", icon: "🐘", name: "Elephant", color: "#64748b" }, { type: "giraffe", icon: "🦒", name: "Giraffe", color: "#f59e0b" }, { type: "zebra", icon: "🦓", name: "Zebra", color: "#e2e8f0" }] },
-            { level: 7, name: "Tiny Insects", target: 8, items: [{ type: "butterfly", icon: "🦋", name: "Butterfly", color: "#a855f7" }, { type: "bee", icon: "🐝", name: "Honey Bee", color: "#facc15" }, { type: "ladybug", icon: "🐞", name: "Ladybug", color: "#ef4444" }] },
-            { level: 8, name: "Wild Safari", target: 9, items: [{ type: "bear", icon: "🐻", name: "Bear", color: "#78350f" }, { type: "panda", icon: "🐼", name: "Panda", color: "#1e293b" }, { type: "koala", icon: "🐨", name: "Koala", color: "#94a3b8" }] },
-            { level: 9, name: "Ocean Friends", target: 9, items: [{ type: "whale", icon: "🐳", name: "Whale", color: "#0284c7" }, { type: "turtle", icon: "🐢", name: "Turtle", color: "#16a34a" }, { type: "crab", icon: "🦀", name: "Crab", color: "#dc2626" }] },
-            { level: 10, name: "Animal Master", target: 10, items: [{ type: "unicorn", icon: "🦄", name: "Unicorn", color: "#f472b6" }, { type: "dragon", icon: "🐲", name: "Dragon", color: "#22c55e" }, { type: "peacock", icon: "🦚", name: "Peacock", color: "#0369a1" }] },
-          ],
-        },
-        {
-          id: "shapes",
-          name: "Shapes & Symbols",
-          icon: "📐",
-          color: "#8b5cf6",
-          levels: [
-            { level: 1, name: "Basic Shapes", target: 5, items: [{ type: "circle", icon: "🔴", name: "Circle", color: "#ef4444" }, { type: "square", icon: "🟧", name: "Square", color: "#f97316" }, { type: "triangle", icon: "🔺", name: "Triangle", color: "#eab308" }] },
-            { level: 2, name: "Star & Heart", target: 6, items: [{ type: "star", icon: "⭐", name: "Star", color: "#fbbf24" }, { type: "heart", icon: "❤️", name: "Heart", color: "#f43f5e" }, { type: "diamond", icon: "🔷", name: "Diamond", color: "#3b82f6" }] },
-            { level: 3, name: "More Shapes", target: 6, items: [{ type: "oval", icon: "🌰", name: "Oval", color: "#a855f7" }, { type: "cross", icon: "✖️", name: "Cross", color: "#ef4444" }, { type: "check", icon: "✔️", name: "Check Mark", color: "#22c55e" }] },
-            { level: 4, name: "Math Signs", target: 7, items: [{ type: "plus", icon: "➕", name: "Plus", color: "#22c55e" }, { type: "minus", icon: "➖", name: "Minus", color: "#ef4444" }, { type: "multiply", icon: "✖️", name: "Multiply", color: "#3b82f6" }] },
-            { level: 5, name: "Smart Symbols", target: 7, items: [{ type: "divide", icon: "➗", name: "Divide", color: "#eab308" }, { type: "equal", icon: "🟰", name: "Equals", color: "#a855f7" }, { type: "question", icon: "❓", name: "Question", color: "#f43f5e" }] },
-            { level: 6, name: "Geometry Fun", target: 8, items: [{ type: "hexagon", icon: "🛑", name: "Hexagon", color: "#dc2626" }, { type: "ring", icon: "⭕", name: "Ring", color: "#06b6d4" }, { type: "box", icon: "📦", name: "Box", color: "#b45309" }] },
-            { level: 7, name: "Symbols Match", target: 8, items: [{ type: "exclamation", icon: "❗", name: "Exclamation", color: "#f97316" }, { type: "dollar", icon: "💲", name: "Dollar", color: "#16a34a" }, { type: "percent", icon: "%", name: "Percent", color: "#ec4899" }] },
-            { level: 8, name: "Arrows & Direction", target: 9, items: [{ type: "arrow_up", icon: "⬆️", name: "Up Arrow", color: "#3b82f6" }, { type: "arrow_down", icon: "⬇️", name: "Down Arrow", color: "#ef4444" }, { type: "arrow_right", icon: "➡️", name: "Right Arrow", color: "#22c55e" }] },
-            { level: 9, name: "Space Shapes", target: 9, items: [{ type: "moon", icon: "🌙", name: "Crescent Moon", color: "#facc15" }, { type: "sun", icon: "☀️", name: "Sun Shape", color: "#f59e0b" }, { type: "sparkle", icon: "💖", name: "Sparkle Heart", color: "#ec4899" }] },
-            { level: 10, name: "Shapes Master", target: 10, items: [{ type: "cube", icon: "🧊", name: "Ice Cube", color: "#38bdf8" }, { type: "pyramid", icon: "🔺", name: "Pyramid", color: "#ea580c" }, { type: "badge", icon: "🔰", name: "Shield Shape", color: "#84cc16" }] },
-          ],
-        },
-        {
-          id: "iq_mix",
-          name: "IQ Mix Challenge",
-          icon: "🧠",
-          color: "#06b6d4",
-          levels: [],
-        },
-      ];
-
-      (function buildIQMixLevels() {
-        try {
-          const iqCategory = categoriesData.find((c) => c.id === "iq_mix");
-          if (!iqCategory) return;
-
-          let masterPool = [];
-          categoriesData.forEach((cat) => {
-            if (cat.id !== "iq_mix" && cat.levels) {
-              cat.levels.forEach((lvl) => {
-                if (lvl.items) masterPool.push(...lvl.items);
-              });
-            }
-          });
-          masterPool.push(...poolFruits);
-
-          const uniquePool = Array.from(
-            new Map(masterPool.map((item) => [item.type, item])).values()
-          );
-
-          iqCategory.levels = Array.from({ length: 10 }, (_, l) => {
-            const shuffled = [...uniquePool].sort(() => 0.5 - Math.sin(l + 1));
-            const levelItems = [
-              shuffled[(l * 3) % shuffled.length],
-              shuffled[(l * 3 + 1) % shuffled.length],
-              shuffled[(l * 3 + 2) % shuffled.length],
-            ];
-
-            const itemNames = levelItems.map((it) => it.name).join(", ");
-            return {
-              level: l + 1,
-              name: `IQ Challenge - Level ${l + 1}`,
-              headerText: `Level ${l + 1}: ${itemNames}`,
-              target: Math.min(5 + Math.floor(l / 2), 10),
-              items: levelItems,
-            };
-          });
-        } catch(e){}
-      })();
-
-      let currentCategory = categoriesData[0],
-        currentLevelIndex = 0;
-      let coins = parseInt(localStorage.getItem("kids_coins") || "0", 10);
-      let stars = parseInt(localStorage.getItem("kids_stars") || "0", 10);
-      let unlockedStickers = [];
-      let unlockedCertificates = [];
-      try {
-        unlockedStickers = JSON.parse(localStorage.getItem("kids_stickers") || "[]");
-        unlockedCertificates = JSON.parse(localStorage.getItem("kids_certificates") || "[]");
-      } catch(e){}
-
-      let currentStreakDay = parseInt(
-        localStorage.getItem("kids_streak_day") || "1",
-        10
-      );
-      let lastClaimDate = localStorage.getItem("kids_last_claim") || "";
-
-      let categoryProgress = {};
-      let activeCategoryLevel = {};
-      try {
-        categoryProgress = JSON.parse(localStorage.getItem("kids_category_progress") || "{}");
-        activeCategoryLevel = JSON.parse(localStorage.getItem("kids_active_category_level") || "{}");
-      } catch(e){}
-
-      let matchedCount = 0,
-        targetCount = 6,
-        activeSelectedItem = null;
-
-      function saveProgress() {
-        try {
-          localStorage.setItem(
-            "kids_category_progress",
-            JSON.stringify(categoryProgress)
-          );
-          localStorage.setItem(
-            "kids_active_category_level",
-            JSON.stringify(activeCategoryLevel)
-          );
-          localStorage.setItem("kids_coins", coins);
-          localStorage.setItem("kids_stars", stars);
-          localStorage.setItem("kids_stickers", JSON.stringify(unlockedStickers));
-          localStorage.setItem(
-            "kids_certificates",
-            JSON.stringify(unlockedCertificates)
-          );
-          localStorage.setItem("kids_streak_day", currentStreakDay);
-          localStorage.setItem("kids_last_claim", lastClaimDate);
-        } catch(e){}
-      }
-
-      function updateHUD() {
-        ["coin-count", "home-coin-count"].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) el.innerText = coins;
-        });
-        ["star-count", "home-star-count"].forEach((id) => {
-          const el = document.getElementById(id);
-          if (el) el.innerText = stars;
-        });
-      }
-
-      function evaluateStreakOnLaunch() {
-        try {
-          const today = new Date().toISOString().split("T")[0];
-          if (!lastClaimDate) {
-            currentStreakDay = 1;
-          } else if (lastClaimDate !== today) {
-            const lastDateObj = new Date(lastClaimDate);
-            const todayDateObj = new Date(today);
-            const diffDays = Math.round(
-              (todayDateObj - lastDateObj) / (1000 * 60 * 60 * 24)
-            );
-
-            if (diffDays === 1) {
-              if (currentStreakDay < 7) currentStreakDay += 1;
-            } else if (diffDays > 1) {
-              currentStreakDay = 1;
-            }
-          }
-          saveProgress();
-        } catch(e){}
-      }
-
-      function renderHomeStreakWidget() {
-        const container = document.getElementById("home-streak-container");
-        if (!container) return;
-        container.innerHTML = "";
-        const today = new Date().toISOString().split("T")[0];
-        const hasClaimedToday = lastClaimDate === today;
-
-        DAILY_STREAK.forEach((cfg) => {
-          const isClaimed =
-            cfg.day < currentStreakDay ||
-            (cfg.day === currentStreakDay && hasClaimedToday);
-          const isReady = cfg.day === currentStreakDay && !hasClaimedToday;
-
-          const card = document.createElement("div");
-          card.className = `home-streak-card ${isClaimed ? "claimed" : isReady ? "active-ready" : "locked"}`;
-          card.innerHTML = `<div>Day ${cfg.day}</div><div style="font-size:1.1rem; margin:2px 0;">${cfg.icon}</div><div>${isClaimed ? "Claimed ✓" : cfg.title}</div>`;
-
-          if (isReady) card.onclick = () => claimDailyReward(cfg.day);
-          container.appendChild(card);
-        });
-      }
-
-      function claimDailyReward(dayNum) {
-        try {
-          const today = new Date().toISOString().split("T")[0];
-          if (lastClaimDate === today || dayNum !== currentStreakDay) return;
-
-          const cfg = DAILY_STREAK.find((d) => d.day === dayNum);
-          if (!cfg) return;
-
-          if (cfg.type === "coins") coins += cfg.val;
-          if (cfg.type === "stars") stars += cfg.val;
-          if (cfg.stickerId && !unlockedStickers.includes(cfg.stickerId))
-            unlockedStickers.push(cfg.stickerId);
-          if (cfg.type === "chest") {
-            coins += cfg.coins;
-            stars += cfg.stars;
-          }
-
-          lastClaimDate = today;
-          saveProgress();
-          updateHUD();
-          renderHomeStreakWidget();
-
-          try { playStreakCelebrationSound(); } catch(e){}
-          try {
-            fireConfetti({
-              particleCount: 80,
-              spread: 60,
-              origin: { y: 0.6 }
-            });
-          } catch(e){}
-          createEpicPopup("Daily Gift Claimed! 🎉", "#facc15");
-        } catch(e) {
-          console.error("Streak error safely handled:", e);
-        }
-      }
-
-      function claimCertificateAction() {
-        try {
-          closeModal('certificate-modal');
-          openCategoryMenu();
-        } catch(e) {
-          openCategoryMenu();
-        }
-      }
-
-      function openStickerAlbum() {
-        const grid = document.getElementById("sticker-grid");
-        if (grid) {
-          grid.innerHTML = ALL_STICKERS.map(
-            (stk) => `
-            <div class="sticker-item-card ${unlockedStickers.includes(stk.id) ? "unlocked" : ""}">
-              <div class="sticker-item-icon" style="font-size:1.8rem">${stk.icon}</div>
-              <div style="font-size: 0.72rem;">${unlockedStickers.includes(stk.id) ? stk.name : "Locked"}</div>
-            </div>
-          `
-          ).join("");
-        }
-        openModal("sticker-album-modal");
-      }
-
-      function openMyCertificatesModal() {
-        const grid = document.getElementById("certificates-grid");
-        if (grid) {
-          if (unlockedCertificates.length === 0) {
-            grid.innerHTML = `<div style="grid-column: span 2; color: #94a3b8; font-size: 0.8rem; padding: 15px;">No Certificates Yet! Complete 10 levels of any category to earn one. 🏆</div>`;
-          } else {
-            grid.innerHTML = unlockedCertificates
-              .map((catId) => {
-                const cat = categoriesData.find((c) => c.id === catId);
-                return `
-                <div class="sticker-item-card unlocked" style="border-color: var(--accent); background: rgba(250, 204, 21, 0.1);" onclick="viewCertificate('${catId}')">
-                  <div style="font-size: 1.8rem;">🎓</div>
-                  <div style="font-size: 0.75rem; font-weight: bold; color: var(--accent); margin-top: 2px;">${cat ? cat.name : "Master"}</div>
-                  <div style="font-size: 0.65rem; color: #10b981;">View 📜</div>
-                </div>
-              `;
-              })
-              .join("");
-          }
-        }
-        openModal("my-certificates-modal");
-      }
-
-      function viewCertificate(catId) {
-        const cat = categoriesData.find((c) => c.id === catId);
-        const nameEl = document.getElementById("cert-detail-name");
-        if (nameEl) {
-          nameEl.innerText = `${cat ? cat.name : "Category"} Champion`;
-        }
-        closeModal("my-certificates-modal");
-        openModal("certificate-detail-modal");
-      }
-
-      function renderCategoryGrid() {
-        const grid = document.getElementById("category-grid");
-        if (!grid) return;
-        grid.innerHTML = categoriesData
-          .map((cat) => {
-            const maxCompleted = categoryProgress[cat.id] || 0;
-            const currentActive = activeCategoryLevel[cat.id] || 0;
-            const maxLvl = cat.levels ? cat.levels.length : 10;
-
-            let statusText = `⭐ 0/${maxLvl} Levels`;
-            if (currentActive > 0 && currentActive < maxLvl) {
-              statusText = `⭐ ${currentActive}/${maxLvl} Levels`;
-            } else if (maxCompleted >= maxLvl) {
-              statusText = "🏆 Completed";
-            } else {
-              statusText = `⭐ ${maxCompleted}/${maxLvl} Levels`;
-            }
-
-            return `
-            <div class="cat-card" style="border-color:${cat.color}" onclick="handleCategoryClick('${cat.id}')">
-              <div style="font-size:2.2rem">${cat.icon}</div>
-              <div style="font-weight:800; font-size: 0.9rem; margin-top: 4px;">${cat.name}</div>
-              <div style="font-size:0.72rem; color:var(--accent); margin-top: 2px;">${statusText}</div>
-            </div>`;
-          })
-          .join("");
-      }
-
-      function handleCategoryClick(catId) {
-        const cat = categoriesData.find((c) => c.id === catId);
-        if (!cat) return;
-        const maxCompleted = categoryProgress[cat.id] || 0;
-        const currentActive = activeCategoryLevel[cat.id] || 0;
-        const maxLvl = cat.levels ? cat.levels.length : 10;
-
-        let activeTrack = currentActive > 0 ? currentActive : maxCompleted;
-
-        if (activeTrack > 0 && activeTrack < maxLvl) {
-          const nextLevelNum = activeTrack + 1;
-          const choiceTitle = document.getElementById("choice-title");
-          const choiceDesc = document.getElementById("choice-desc");
-
-          if (choiceTitle) choiceTitle.innerText = cat.name;
-          if (choiceDesc) choiceDesc.innerText = `You are currently at Level ${activeTrack}!`;
-
-          const resumeBtn = document.getElementById("btn-resume");
-          if (resumeBtn) {
-            resumeBtn.innerText = `RESUME TO LEVEL ${nextLevelNum} ➔`;
-            resumeBtn.onclick = () => {
-              closeModal("start-choice-modal");
-              startCategoryGame(cat, activeTrack);
-            };
-          }
-
-          const restartBtn = document.getElementById("btn-restart");
-          if (restartBtn) {
-            restartBtn.innerText = `RESTART TO LEVEL 1 🔄`;
-            restartBtn.onclick = () => {
-              closeModal("start-choice-modal");
-              activeCategoryLevel[cat.id] = 0;
-              saveProgress();
-              startCategoryGame(cat, 0);
-            };
-          }
-
-          openModal("start-choice-modal");
-        } else {
-          startCategoryGame(cat, maxCompleted >= maxLvl ? 0 : maxCompleted);
-        }
-      }
-
-      function startCategoryGame(cat, levelIdx) {
-        currentCategory = cat;
-        currentLevelIndex = levelIdx;
-        const catScreen = document.getElementById("category-screen");
-        if (catScreen) catScreen.style.display = "none";
-        
-        const activeCatTitle = document.getElementById("active-cat-title");
-        if (activeCatTitle) {
-          activeCatTitle.innerText = `${cat.name} ${cat.icon}`;
-        }
-        
-        loadCurrentLevel();
-      }
-
-      function openCategoryMenu() {
-        renderCategoryGrid();
-        renderHomeStreakWidget();
-        updateHUD();
-        const catScreen = document.getElementById("category-screen");
-        if (catScreen) catScreen.style.display = "flex";
-      }
-
-      function loadCurrentLevel() {
-        const playArea = document.getElementById("play-area");
-        const basketContainer = document.getElementById("basket-container");
-        
-        if (!playArea || !basketContainer) return;
-        const levelData = currentCategory.levels[currentLevelIndex];
-
-        playArea.innerHTML = `<div class="level-banner" id="level-display">${levelData.headerText || `Level ${currentLevelIndex + 1}`}</div>`;
-        basketContainer.innerHTML = "";
-
-        matchedCount = 0;
-        targetCount = levelData.target;
-        activeSelectedItem = null;
-        document.body.classList.toggle("no-badge", !!levelData.hideBadge);
-        updateProgressBar();
-
-        levelData.items.forEach((item) => {
-          const basket = document.createElement("div");
-          basket.className = "fruit-basket";
-          basket.style.borderColor = item.color;
-          basket.innerHTML = `<div class="basket-icon" style="color:${item.color}">${item.icon}</div><div class="basket-label" style="color:${item.color}">${item.name}</div>`;
-          basket.onclick = () => onBasketClick(item.type, basket);
-          basketContainer.appendChild(basket);
-        });
-
-        const itemsToSpawn = Array.from(
-          { length: targetCount },
-          (_, i) => levelData.items[i % levelData.items.length]
-        ).sort(() => Math.random() - 0.5);
-
-        const placedBounds = [];
-        const playAreaBounds = playArea.getBoundingClientRect();
-        const playAreaWidth = playAreaBounds.width || window.innerWidth || 360;
-        const playAreaHeight = playAreaBounds.height || 380;
-
-        const itemWidth = 80;
-        const itemHeight = 80;
-
-        itemsToSpawn.forEach((item) => {
-          let bestX = 0,
-            bestY = 0,
-            placed = false;
-          let attempts = 0;
-
-          while (!placed && attempts < 100) {
-            attempts++;
-            const candidateX =
-              10 + Math.random() * Math.max(10, playAreaWidth - itemWidth - 20);
-            const candidateY =
-              45 + Math.random() * Math.max(10, playAreaHeight - itemHeight - 50);
-
-            let overlaps = false;
-            for (let b of placedBounds) {
-              const distanceX = Math.abs(candidateX - b.x);
-              const distanceY = Math.abs(candidateY - b.y);
-              if (distanceX < 75 && distanceY < 75) {
-                overlaps = true;
-                break;
-              }
-            }
-
-            if (!overlaps || attempts === 100) {
-              bestX = candidateX;
-              bestY = candidateY;
-              placed = true;
-            }
-          }
-
-          placedBounds.push({ x: bestX, y: bestY });
-
-          const el = document.createElement("div");
-          el.className = `fruit-item ${item.isText ? "text-item" : ""}`;
-          el.style.left = `${bestX}px`;
-          el.style.top = `${bestY}px`;
-
-          if (item.isText) {
-            el.innerHTML = `<div class="fruit-icon-large" style="color:${item.color}; text-shadow: 0 4px 0px ${item.color}88;">${item.icon}</div>`;
-          } else {
-            el.innerHTML = `<div class="fruit-text-hint" style="color:${item.color}">${item.name}</div><div class="fruit-icon-large">${item.icon}</div>`;
-          }
-
-          el.onclick = (e) => {
-            e.stopPropagation();
-            document
-              .querySelectorAll(".fruit-item")
-              .forEach((i) => i.classList.remove("selected"));
-            el.classList.add("selected");
-            activeSelectedItem = { element: el, data: item };
-          };
-          playArea.appendChild(el);
-        });
-      }
-
-      function onBasketClick(basketType, basketEl) {
-        if (!activeSelectedItem) return;
-
-        if (activeSelectedItem.data.type === basketType) {
-          playSuccessSound();
-          
-          /* ALWAYS ANNOUNCE ITEM NAME ON SUCCESSFUL MATCH ASYNCHRONOUSLY */
-          const textToSay = activeSelectedItem.data.speak || activeSelectedItem.data.name;
-          speakText(textToSay);
-
-          coins += 10;
-          matchedCount++;
-          updateHUD();
-          updateProgressBar();
-          activeSelectedItem.element.remove();
-          activeSelectedItem = null;
-          if (matchedCount >= targetCount) setTimeout(onLevelComplete, 500);
-        } else {
-          playErrorSound();
-          createEpicPopup("Try Again! ❌", "#ef4444");
-        }
-      }
-
-      function updateProgressBar() {
-        const bar = document.getElementById("progress-fill-bar");
-        if (bar) bar.style.width = `${(matchedCount / targetCount) * 100}%`;
-      }
-
-      /* ADMOB & INTERSTITIAL AD LOGIC WITH SAFE NON-BLOCKING EXECUTION */
-      let admobPlugin = null;
-      const ADMOB_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712";
-
-      async function initAdMob() {
-        try {
-          if (window.Capacitor?.Plugins?.AdMob) {
-            admobPlugin = window.Capacitor.Plugins.AdMob;
-            await admobPlugin.initialize({
-              requestTrackingAuthorization: true,
-              testingDevices: [],
-              initializeForTesting: false,
-            });
-            preloadInterstitialAd();
-          }
-        } catch (err) {}
-      }
-
-      async function preloadInterstitialAd() {
-        if (!admobPlugin) return;
-        try {
-          await admobPlugin.prepareInterstitial({
-            adId: ADMOB_INTERSTITIAL_ID,
-            isTesting: false,
-          });
-        } catch (err) {}
-      }
-
-      function showInterstitialAd() {
-        if (!admobPlugin) return;
-        try {
-          admobPlugin.showInterstitial().catch(() => {}).finally(() => {
-            preloadInterstitialAd();
-          });
-        } catch (err) {
-          preloadInterstitialAd();
-        }
-      }
-
-      function onLevelComplete() {
-        playWinSound();
-        coins += 50;
-        stars += 3;
-
-        const maxCatLevels = currentCategory.levels
-          ? currentCategory.levels.length
-          : 10;
-        const currentLvlNum = currentLevelIndex + 1;
-
-        activeCategoryLevel[currentCategory.id] = currentLvlNum;
-        if (currentLvlNum > (categoryProgress[currentCategory.id] || 0)) {
-          categoryProgress[currentCategory.id] = currentLvlNum;
-        }
-
-        /* Safe Non-Blocking Interstitial Ad Call */
-        if (currentLvlNum % 3 === 0 && currentLvlNum < maxCatLevels) {
-          setTimeout(() => {
-            showInterstitialAd();
-          }, 400);
-        }
-
-        /* UNLOCK CERTIFICATE AND STICKER ON LEVEL 10 COMPLETION */
-        if (currentLvlNum >= maxCatLevels) {
-          activeCategoryLevel[currentCategory.id] = 0;
-
-          if (!unlockedCertificates.includes(currentCategory.id)) {
-            unlockedCertificates.push(currentCategory.id);
-          }
-          const categorySticker = ALL_STICKERS.find(
-            (s) => s.categoryId === currentCategory.id
-          );
-          if (
-            categorySticker &&
-            !unlockedStickers.includes(categorySticker.id)
-          ) {
-            unlockedStickers.push(categorySticker.id);
-          }
-
-          saveProgress();
-          updateHUD();
-          const certTitle = document.getElementById("cert-category-name");
-          if (certTitle) certTitle.innerText = `${currentCategory.name} Champion`;
-          
-          openModal("certificate-modal");
-          try {
-            fireConfetti({
-              particleCount: 100,
-              spread: 70,
-              origin: { y: 0.5 },
-            });
-          } catch(e){}
-          return;
-        }
-
-        saveProgress();
-        updateHUD();
-
-        const praiseEl = document.getElementById("reward-praise");
-        const starMsgEl = document.getElementById("reward-star-msg");
-        const listEl = document.getElementById("reward-rewards-list");
-        
-        if (praiseEl) praiseEl.innerText = "Excellent!";
-        if (starMsgEl) starMsgEl.innerText = "⭐ You earned 3 Stars!";
-        if (listEl) listEl.innerText = `🪙 +50 Coins | 🏆 Level ${currentLvlNum} Badge Earned!`;
-
-        const actionBtn = document.getElementById("modal-action-btn");
-        if (actionBtn) {
-          if (currentLevelIndex < maxCatLevels - 1) {
-            actionBtn.style.display = "block";
-            actionBtn.innerText = `NEXT LEVEL ➔ ${currentLvlNum + 1}`;
-          } else {
-            actionBtn.style.display = "none";
-          }
-        }
-
-        openModal("victory-modal");
-      }
-
-      function nextLevelAction() {
-        closeModal("victory-modal");
-        const maxCatLevels = currentCategory.levels
-          ? currentCategory.levels.length
-          : 10;
-        if (currentLevelIndex < maxCatLevels - 1) {
-          currentLevelIndex++;
-          loadCurrentLevel();
-        } else openCategoryMenu();
-      }
-
-      function openModal(id) {
-        const el = document.getElementById(id);
-        if (el) el.style.display = "flex";
-      }
-
-      function closeModal(id) {
-        const el = document.getElementById(id);
-        if (el) el.style.display = "none";
-      }
-
-      /* STEP-BY-STEP HARDWARE/BROWSER BACK NAVIGATION ENGINE */
-      let backPressCount = 0;
-
-      function handleBackNavigation() {
-        // Step 1: Tutorial Modal Close
-        const tutorModal = document.getElementById("tutorial-modal");
-        if (tutorModal && tutorModal.style.display === "flex") {
-          tutorModal.style.display = "none";
-          try {
-            localStorage.setItem("kids_tutorial_completed", "true");
-          } catch(e){}
-          return true;
-        }
-
-        // Step 2: Detail Certificate Modal
-        const certDetail = document.getElementById("certificate-detail-modal");
-        if (certDetail && certDetail.style.display === "flex") {
-          certDetail.style.display = "none";
-          openMyCertificatesModal();
-          return true;
-        }
-
-        // Step 3: Check All General Modals
-        const modals = [
-          "certificate-modal",
-          "my-certificates-modal",
-          "sticker-album-modal",
-          "victory-modal",
-          "start-choice-modal",
-        ];
-        for (let mId of modals) {
-          const el = document.getElementById(mId);
-          if (el && el.style.display === "flex") {
-            el.style.display = "none";
-            return true;
-          }
-        }
-
-        // Step 4: Active Game Play Area -> Return to Category Menu
-        const catScreen = document.getElementById("category-screen");
-        if (catScreen && catScreen.style.display === "none") {
-          openCategoryMenu();
-          return true;
-        }
-
-        // Step 5: Main Menu Root -> Exit App (Confirmation Toast)
-        backPressCount++;
-        if (backPressCount === 1) {
-          createEpicPopup("Press back again to Exit 🚪", "#facc15");
-          setTimeout(() => (backPressCount = 0), 2000);
-          return true;
-        } else if (backPressCount >= 2) {
-          return false; // Triggers native exit
-        }
-
-        return true;
-      }
-
-      // Capacitor Native App Hardware Back Support
-      document.addEventListener("deviceready", () => {
-        if (window.Capacitor?.Plugins?.App) {
-          window.Capacitor.Plugins.App.addListener("backButton", () => {
-            const handled = handleBackNavigation();
-            if (!handled) {
-              window.Capacitor.Plugins.App.exitApp();
-            }
-          });
-        }
-      });
-
-      // Browser History Popstate Support
-      window.addEventListener("popstate", () => {
-        handleBackNavigation();
-      });
-    </script>
+    <script src="./js/app.js"></script>
   </body>
 </html>
